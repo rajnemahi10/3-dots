@@ -1,5 +1,4 @@
-from modular_gui.board import apply_move, get_all_moves
-from modular_gui.engine import has_any_win
+from modular_gui.board import apply_move, get_all_moves, resolve_move_outcome
 
 
 def copy_board(board):
@@ -13,19 +12,19 @@ def board_key(board, player):
     )
 
 
-def has_win(board, player):
-    return has_any_win(board, player)
-
-
 def move_results_in_win(board, move, player):
     next_board = copy_board(board)
     apply_move(next_board, move)
-    return has_win(next_board, player)
+    outcome = resolve_move_outcome(next_board, player, move[1])
+    return outcome["status"] == "win" and outcome["winner"] == player
 
 
 def opponent_has_immediate_win(board, player):
     opponent = 2 if player == 1 else 1
-    return has_win(board, opponent)
+    return any(
+        move_results_in_win(board, move, opponent)
+        for move in get_all_moves(board, opponent)
+    )
 
 
 def choose_move(board, player, legal_moves, rng, seen_states=None):
@@ -36,6 +35,7 @@ def choose_move(board, player, legal_moves, rng, seen_states=None):
         seen_states = set()
 
     winning_moves = []
+    drawing_moves = []
     blocking_moves = []
     safe_unseen_moves = []
     safe_seen_moves = []
@@ -54,8 +54,20 @@ def choose_move(board, player, legal_moves, rng, seen_states=None):
         next_state = board_key(next_board, opponent)
         is_seen = next_state in seen_states
 
-        if has_win(next_board, player):
-            winning_moves.append(move)
+        outcome = resolve_move_outcome(next_board, player, move[1])
+
+        if outcome["status"] == "win":
+            if outcome["winner"] == player:
+                winning_moves.append(move)
+            elif is_seen:
+                risky_seen_moves.append(move)
+            else:
+                risky_unseen_moves.append(move)
+
+            continue
+
+        if outcome["status"] == "draw":
+            drawing_moves.append(move)
             continue
 
         if opponent_has_immediate_win(next_board, player):
@@ -76,19 +88,10 @@ def choose_move(board, player, legal_moves, rng, seen_states=None):
     if winning_moves:
         return rng.choice(winning_moves)
 
+    if drawing_moves:
+        return rng.choice(drawing_moves)
+
     if blocking_moves:
-        non_losing_blocks = []
-
-        for move in blocking_moves:
-            next_board = copy_board(board)
-            apply_move(next_board, move)
-
-            if not opponent_has_immediate_win(next_board, player):
-                non_losing_blocks.append(move)
-
-        if non_losing_blocks:
-            return rng.choice(non_losing_blocks)
-
         return rng.choice(blocking_moves)
 
     if safe_unseen_moves:

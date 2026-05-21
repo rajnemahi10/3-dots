@@ -1,6 +1,4 @@
-from modular_gui.ai_heuristic import choose_move as choose_heuristic_move
-from modular_gui.board import apply_move, get_all_moves
-from modular_gui.engine import has_any_win
+from modular_gui.board import apply_move, get_all_moves, resolve_move_outcome
 
 
 DEFAULT_ROLLOUTS = 24
@@ -11,24 +9,28 @@ def copy_board(board):
     return [row[:] for row in board]
 
 
-def has_win(board, player):
-    return has_any_win(board, player)
+def score_outcome(outcome, root_player):
+    if outcome["status"] == "draw":
+        return 0.0
+
+    if outcome["status"] == "win":
+        if outcome["winner"] == root_player:
+            return 1.0
+
+        return -1.0
+
+    return None
 
 
 def move_results_in_win(board, move, player):
     next_board = copy_board(board)
     apply_move(next_board, move)
-    return has_win(next_board, player)
+    outcome = resolve_move_outcome(next_board, player, move[1])
+    return outcome["status"] == "win" and outcome["winner"] == player
 
 
 def evaluate_board(board, player):
     opponent = 2 if player == 1 else 1
-
-    if has_win(board, player):
-        return 1000
-
-    if has_win(board, opponent):
-        return -1000
 
     player_winning_moves = sum(
         1
@@ -61,18 +63,15 @@ def rollout_result(board, next_player, root_player, rng, rollout_depth):
         if not legal_moves:
             return 0.0
 
-        move = choose_heuristic_move(
-            board,
-            current_player,
-            legal_moves,
-            rng,
-            set(),
-        )
+        move = rng.choice(legal_moves)
 
         apply_move(board, move)
 
-        if has_win(board, current_player):
-            return 1.0 if current_player == root_player else -1.0
+        outcome = resolve_move_outcome(board, current_player, move[1])
+        outcome_score = score_outcome(outcome, root_player)
+
+        if outcome_score is not None:
+            return outcome_score
 
         current_player = 2 if current_player == 1 else 1
         depth_left -= 1
@@ -105,9 +104,10 @@ def choose_move(board, player, legal_moves, rng, seen_states=None):
             next_board = copy_board(board)
             apply_move(next_board, move)
 
-            if has_win(next_board, player):
-                total += 1.0
-            else:
+            outcome = resolve_move_outcome(next_board, player, move[1])
+            outcome_score = score_outcome(outcome, player)
+
+            if outcome_score is None:
                 total += rollout_result(
                     next_board,
                     opponent,
@@ -115,6 +115,8 @@ def choose_move(board, player, legal_moves, rng, seen_states=None):
                     rng,
                     DEFAULT_ROLLOUT_DEPTH,
                 )
+            else:
+                total += outcome_score
 
         score = total / DEFAULT_ROLLOUTS
 
