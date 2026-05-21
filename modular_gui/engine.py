@@ -1,3 +1,15 @@
+from typing import Literal, TypeAlias
+
+Cell: TypeAlias = Literal[".", "r", "g", "R", "G", "J", "X"]
+
+EMPTY: Cell = "."
+RED_SINGLE: Cell = "r"
+GREEN_SINGLE: Cell = "g"
+RED_LONG: Cell = "R"
+GREEN_LONG: Cell = "G"
+JOKER: Cell = "J"
+BLOCKED: Cell = "X"
+
 PATTERNS = {
     "horizontal": [],
     "vertical": [],
@@ -31,38 +43,135 @@ SHAPE_PATTERNS = {
     ],
 }
 
-JOKER = 9
-ACTIVE_JOKER_POSITIONS = set()
+CURRENT_PATTERN_SIZE: int | None = None
+
+STARTING_NOTATION_BY_SIZE = {
+    4: [
+        "X J X J X X",
+        "X . R . . J",
+        "J r . g . X",
+        "X . r . g J",
+        "J . . G . X",
+        "X X J X J X",
+    ],
+    5: [
+        "X J X J X X X",
+        "X . . R . . J",
+        "X r . . g . X",
+        "J . . . . . J",
+        "X . r . . g X",
+        "J . . G . . X",
+        "X X X J X J X",
+    ],
+    6: [
+        "X J X X J X X X",
+        "X . . R . . . J",
+        "X . r . . g . X",
+        "J . . r g . . X",
+        "X . . g r . . J",
+        "X . g . . r . X",
+        "J . . . G . . X",
+        "X X X J X X J X",
+    ],
+}
 
 
-def owner_of(cell):
-    if cell in (1, 3):
+def parse_compact_notation_rows(rows: list[str]) -> list[list[Cell]]:
+    board: list[list[Cell]] = []
+
+    valid_tokens = {
+        EMPTY,
+        RED_SINGLE,
+        GREEN_SINGLE,
+        RED_LONG,
+        GREEN_LONG,
+        JOKER,
+        BLOCKED,
+    }
+    edge_tokens = {BLOCKED, JOKER}
+    interior_tokens = {EMPTY, RED_SINGLE, GREEN_SINGLE, RED_LONG, GREEN_LONG}
+
+    for raw_row in rows:
+        text = raw_row.strip()
+
+        if text.startswith("[") and text.endswith("]"):
+            text = text[1:-1].strip()
+
+        tokens = [token for token in text.replace(",", " ").split() if token]
+
+        if not tokens:
+            continue
+
+        row: list[Cell] = []
+
+        for token in tokens:
+            if token not in valid_tokens:
+                raise ValueError(f"Unknown notation token: {token}")
+
+            row.append(token)
+
+        board.append(row)
+
+    if not board:
+        raise ValueError("Notation rows cannot be empty")
+
+    width = len(board[0])
+
+    if any(len(row) != width for row in board):
+        raise ValueError("All notation rows must have equal width")
+
+    size = len(board)
+
+    if size < 3 or width != size:
+        raise ValueError("Notation must be square and at least 3x3")
+
+    for row_index, row in enumerate(board):
+        for col_index, cell in enumerate(row):
+            on_edge = (
+                row_index == 0
+                or col_index == 0
+                or row_index == size - 1
+                or col_index == size - 1
+            )
+
+            if on_edge and cell not in edge_tokens:
+                raise ValueError("Board edge must contain only X or J")
+
+            if not on_edge and cell not in interior_tokens:
+                raise ValueError("Board interior must contain only ., r, g, R, G")
+
+    return board
+
+
+def owner_of(cell: Cell) -> int:
+    if cell in (RED_SINGLE, RED_LONG):
         return 1
 
-    if cell in (2, 4):
+    if cell in (GREEN_SINGLE, GREEN_LONG):
         return 2
 
     return 0
 
 
-def is_player_piece(cell, player):
+def is_player_piece(cell: Cell, player: int) -> bool:
     return owner_of(cell) == player
 
 
-def is_long_range_piece(cell):
-    return cell in (3, 4)
+def is_long_range_piece(cell: Cell) -> bool:
+    return cell in (RED_LONG, GREEN_LONG)
 
 
-def is_joker(cell):
+def is_joker(cell: Cell) -> bool:
     return cell == JOKER
 
 
-def endpoint_matches_player(cell, player):
+def endpoint_matches_player(cell: Cell, player: int) -> bool:
     return owner_of(cell) == player or is_joker(cell)
 
 
 def generate_patterns(size):
     global PATTERNS
+    global CURRENT_PATTERN_SIZE
 
     PATTERNS = {
         "horizontal": [],
@@ -72,15 +181,11 @@ def generate_patterns(size):
 
     for row in range(size):
         for col in range(size - 2):
-            PATTERNS["horizontal"].append(
-                [(row, col), (row, col + 1), (row, col + 2)]
-            )
+            PATTERNS["horizontal"].append([(row, col), (row, col + 1), (row, col + 2)])
 
     for row in range(size - 2):
         for col in range(size):
-            PATTERNS["vertical"].append(
-                [(row, col), (row + 1, col), (row + 2, col)]
-            )
+            PATTERNS["vertical"].append([(row, col), (row + 1, col), (row + 2, col)])
 
     for row in range(size - 2):
         for col in range(size - 2):
@@ -92,95 +197,26 @@ def generate_patterns(size):
                 [(row, col + 2), (row + 1, col + 1), (row + 2, col)]
             )
 
-    if size == 4:
-        for col in (1, 3):
-            PATTERNS["vertical"].append([(-1, col), (0, col), (1, col)])
-
-        for col in (0, 2):
-            PATTERNS["vertical"].append([(2, col), (3, col), (4, col)])
-
-        for row in (0, 2):
-            PATTERNS["horizontal"].append([(row, -1), (row, 0), (row, 1)])
-
-        for row in (1, 3):
-            PATTERNS["horizontal"].append([(row, 2), (row, 3), (row, 4)])
-
-    if size == 5:
-        for col in (1, 3):
-            PATTERNS["vertical"].append([(-1, col), (0, col), (1, col)])
-
-        for col in (1, 3):
-            PATTERNS["vertical"].append([(3, col), (4, col), (5, col)])
-
-        for row in (1, 3):
-            PATTERNS["horizontal"].append([(row, -1), (row, 0), (row, 1)])
-
-        for row in (1, 3):
-            PATTERNS["horizontal"].append([(row, 3), (row, 4), (row, 5)])
-
-    if size == 6:
-        for col in (1, 4):
-            PATTERNS["vertical"].append([(-1, col), (0, col), (1, col)])
-
-        for col in (1, 4):
-            PATTERNS["vertical"].append([(4, col), (5, col), (6, col)])
-
-        for row in (1, 4):
-            PATTERNS["horizontal"].append([(row, -1), (row, 0), (row, 1)])
-
-        for row in (1, 4):
-            PATTERNS["horizontal"].append([(row, 4), (row, 5), (row, 6)])
+    CURRENT_PATTERN_SIZE = size
 
 
-def get_outside_joker_positions(size):
-    if size == 4:
-        return {
-            (-1, 1), (-1, 3),
-            (0, -1), (2, -1),
-            (1, 4), (3, 4),
-            (4, 0), (4, 2),
-        }
+def ensure_patterns_for_board(board: list[list[Cell]]) -> None:
+    size = len(board)
 
-    if size == 5:
-        return {
-            (-1, 1), (-1, 3),
-            (1, -1), (3, -1),
-            (1, 5), (3, 5),
-            (5, 1), (5, 3),
-        }
-
-    if size == 6:
-        return {
-            (-1, 1), (-1, 4),
-            (1, -1), (4, -1),
-            (1, 6), (4, 6),
-            (6, 1), (6, 4),
-        }
-
-    return set()
+    if CURRENT_PATTERN_SIZE != size:
+        generate_patterns(size)
 
 
-def set_active_joker_positions(size):
-    global ACTIVE_JOKER_POSITIONS
-
-    ACTIVE_JOKER_POSITIONS = get_outside_joker_positions(size)
-
-
-def get_active_joker_positions():
-    return set(ACTIVE_JOKER_POSITIONS)
-
-
-def get_cell(board, row, col):
+def get_cell(board: list[list[Cell]], row: int, col: int) -> Cell | None:
     if 0 <= row < len(board) and 0 <= col < len(board[row]):
         return board[row][col]
-
-    if (row, col) in ACTIVE_JOKER_POSITIONS:
-        return JOKER
 
     return None
 
 
 def check_win(board, player, pattern_name):
+    ensure_patterns_for_board(board)
+
     opponent = 2 if player == 1 else 1
 
     for pattern in PATTERNS[pattern_name]:
@@ -256,6 +292,8 @@ config = GameConfig()
 
 
 def has_any_win(board, player):
+    ensure_patterns_for_board(board)
+
     for pattern_name in config.player_patterns[player]:
         if check_win(board, player, pattern_name):
             return True
@@ -268,63 +306,12 @@ def has_any_win(board, player):
     return False
 
 
-def create_initial_board(layout="crossfire_4x4"):
-    if layout in ("crossfire_4x4", "rotational_4x4"):
-        size = 4
-    elif layout in ("center_warfare_5x5", "dual_pressure_5x5"):
-        size = 5
-    elif layout == "competitive_6x6":
-        size = 6
-    else:
-        size = 4
+def create_initial_board(board_size: int = 4):
+    if board_size not in STARTING_NOTATION_BY_SIZE:
+        raise ValueError(f"Unsupported board size: {board_size}")
 
-    generate_patterns(size)
-    set_active_joker_positions(size)
+    board = parse_compact_notation_rows(STARTING_NOTATION_BY_SIZE[board_size])
 
-    board = [[0] * size for _ in range(size)]
-
-    if layout == "crossfire_4x4":
-        board = [
-            [0, 3, 0, 0],
-            [1, 0, 2, 0],
-            [0, 1, 0, 2],
-            [0, 0, 4, 0],
-        ]
-
-    elif layout == "rotational_4x4":
-        board = [
-            [1, 0, 0, 3],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [4, 0, 0, 2],
-        ]
-
-    elif layout == "center_warfare_5x5":
-        board = [
-            [0, 0, 3, 0, 0],
-            [1, 0, 0, 2, 0],
-            [0, 0, 0, 0, 0],
-            [0, 1, 0, 0, 2],
-            [0, 0, 4, 0, 0],
-        ]
-
-    elif layout == "dual_pressure_5x5":
-        board = [
-            [1, 0, 0, 0, 3],
-            [0, 0, 2, 0, 0],
-            [0, 1, 0, 2, 0],
-            [0, 0, 1, 0, 0],
-            [4, 0, 0, 0, 2],
-        ]
-
-    elif layout == "competitive_6x6":
-        board = [
-            [0, 0, 3, 0, 0, 0],
-            [0, 1, 0, 0, 2, 0],
-            [0, 0, 1, 2, 0, 0],
-            [0, 0, 2, 1, 0, 0],
-            [0, 2, 0, 0, 1, 0],
-            [0, 0, 0, 4, 0, 0],
-        ]
+    generate_patterns(len(board))
 
     return board

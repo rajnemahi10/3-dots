@@ -16,6 +16,31 @@ This folder contains a modular Tkinter game app that reuses the existing project
 
 This package is self-contained: it does not import engine or AI logic from the project root.
 
+## Board Notation
+
+Use compact notation tokens in examples/tests:
+
+- . = empty
+- X = unplayable square (expanded border notation)
+- r = red single-step
+- R = red long-range
+- g = green single-step
+- G = green long-range
+- J = joker (expanded border notation)
+
+Example 4x4 row format:
+
+. R g .
+
+Expanded 4x4 with border notation:
+
+X X J X J X
+J . R g . X
+X r . . . J
+J . . . g X
+X . r G . J
+X J X J X X
+
 ## Strategy Values
 
 Use one of these values for each player in the GUI:
@@ -32,14 +57,16 @@ Use one of these values for each player in the GUI:
 - 5
 - 6
 
-Board size maps to existing layouts from engine_4x4.py:
-
-- 4 -> crossfire_4x4
-- 5 -> center_warfare_5x5
-- 6 -> competitive_6x6
+Each size uses one canonical starting board notation.
 
 ## Run
 
 From the repository root:
 
 python -m modular_gui.main
+
+## Tests
+
+From the repository root:
+
+python -m unittest discover -s modular_gui/tests -p "test_*.py"

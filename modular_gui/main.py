@@ -6,7 +6,13 @@ from modular_gui.engine import is_joker, is_player_piece
 from modular_gui.visuals import draw_game
 
 from modular_gui import ai_heuristic, ai_minimax, ai_monte_carlo, ai_random
-from modular_gui.board import apply_move, create_board, generate_moves, get_all_moves, player_has_win
+from modular_gui.board import (
+    apply_move,
+    create_board,
+    generate_moves,
+    get_all_moves,
+    resolve_move_outcome,
+)
 
 
 BOARD_PIXELS = 600
@@ -125,7 +131,7 @@ class PatternGameApp:
         board_size = int(self.board_size_var.get())
 
         self.board = create_board(board_size)
-        self.cell_size = BOARD_PIXELS // board_size
+        self.cell_size = BOARD_PIXELS // len(self.board)
         self.selected = None
         self.legal_moves = []
         self.current_player = 1
@@ -213,6 +219,41 @@ class PatternGameApp:
 
         return self.player_2_var.get()
 
+    def _apply_move_outcome(self, moved_to):
+        outcome = resolve_move_outcome(
+            self.board,
+            self.current_player,
+            moved_to,
+        )
+
+        if outcome["status"] == "draw":
+            self.game_over = True
+            messagebox.showinfo(
+                "Pattern Game",
+                "Draw: both players formed a pattern through the moved piece.",
+            )
+            return True
+
+        if outcome["status"] == "win":
+            self.game_over = True
+            winner = outcome["winner"]
+
+            if winner != self.current_player and outcome["reason"] == "self_sabotage":
+                messagebox.showinfo(
+                    "Pattern Game",
+                    f"{PLAYER_COLORS[self.current_player]} self-sabotaged. "
+                    f"{PLAYER_COLORS[winner]} wins!",
+                )
+            else:
+                messagebox.showinfo(
+                    "Pattern Game",
+                    f"{PLAYER_COLORS[winner]} wins!",
+                )
+
+            return True
+
+        return False
+
     def _schedule_ai_turn(self):
         if self.game_over:
             return
@@ -270,12 +311,7 @@ class PatternGameApp:
         self.legal_moves = []
         self._redraw()
 
-        if player_has_win(self.board, self.current_player):
-            self.game_over = True
-            messagebox.showinfo(
-                "Pattern Game",
-                f"{PLAYER_COLORS[self.current_player]} wins!",
-            )
+        if self._apply_move_outcome(move[1]):
             return
 
         self._advance_turn()
@@ -311,20 +347,18 @@ class PatternGameApp:
             if (row, col) in self.legal_moves:
                 apply_move(self.board, (self.selected, (row, col)))
                 self._record_current_position()
+                self.selected = None
+                self.legal_moves = []
+                self._redraw()
 
-                if player_has_win(self.board, self.current_player):
-                    self._redraw()
-                    self.game_over = True
-                    messagebox.showinfo(
-                        "Pattern Game",
-                        f"{PLAYER_COLORS[self.current_player]} wins!",
-                    )
+                if self._apply_move_outcome((row, col)):
                     return
 
                 self._advance_turn()
 
-            self.selected = None
-            self.legal_moves = []
+            if self.selected is not None:
+                self.selected = None
+                self.legal_moves = []
 
         self._redraw()
         self._schedule_ai_turn()
