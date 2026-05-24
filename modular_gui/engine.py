@@ -1,6 +1,14 @@
 from typing import Literal, TypeAlias
 
-Cell: TypeAlias = Literal[".", "r", "g", "R", "G", "J", "X"]
+Cell: TypeAlias = Literal[
+    ".",
+    "r",
+    "g",
+    "R",
+    "G",
+    "J",
+    "X",
+]
 
 EMPTY: Cell = "."
 RED_SINGLE: Cell = "r"
@@ -22,35 +30,35 @@ PATTERNS = {
 SHAPE_PATTERNS = {
 
     "triangle_up": [
-        [(0, 1), (1, 0), (1, 2)],
+        [(1,0), (0,1), (1,2)],
     ],
 
     "triangle_down": [
-        [(0, 0), (0, 2), (1, 1)],
+        [(0,0), (1,1), (0,2)],
     ],
 
     "triangle_left": [
-        [(0, 0), (1, 1), (2, 0)],
+        [(0,0), (1,1), (2,0)],
     ],
 
     "triangle_right": [
-        [(0, 1), (1, 0), (2, 1)],
+        [(0,1), (1,0), (2,1)],
     ],
 
     "corner_ul": [
-        [(0, 0), (0, 1), (1, 0)],
+        [(0,1), (0,0), (1,0)],
     ],
 
     "corner_ur": [
-        [(0, 0), (0, 1), (1, 1)],
+        [(0,0), (0,1), (1,1)],
     ],
 
     "corner_dl": [
-        [(0, 0), (1, 0), (1, 1)],
+        [(0,0), (1,0), (1,1)],
     ],
 
     "corner_dr": [
-        [(0, 1), (1, 0), (1, 1)],
+        [(0,1), (1,1), (1,0)],
     ],
 }
 
@@ -62,17 +70,17 @@ STARTING_NOTATION_BY_SIZE = {
 
     4: [
 
-        "X X J X J X",
+        "X X X X X X",
 
-        "J R . . . X",
+        "X r r . . X",
 
-        "X . . . . J",
+        "X . . . . X",
 
-        "J . . . . X",
+        "X . . . . X",
 
-        "X . . . G J",
+        "X . . g g X",
 
-        "X J X J X X",
+        "X X X X X X",
     ],
 
     5: [
@@ -234,6 +242,7 @@ def parse_compact_notation_rows(rows):
     board = []
 
     valid_tokens = {
+
         EMPTY,
         RED_SINGLE,
         GREEN_SINGLE,
@@ -259,6 +268,7 @@ def parse_compact_notation_rows(rows):
         for token in tokens:
 
             if token not in valid_tokens:
+
                 raise ValueError(
                     f"Unknown token: {token}"
                 )
@@ -273,6 +283,7 @@ def parse_compact_notation_rows(rows):
     width = len(board[0])
 
     if any(len(row) != width for row in board):
+
         raise ValueError(
             "Rows must have equal width"
         )
@@ -280,6 +291,7 @@ def parse_compact_notation_rows(rows):
     size = len(board)
 
     if width != size:
+
         raise ValueError(
             "Board must be square"
         )
@@ -291,6 +303,7 @@ def parse_compact_notation_rows(rows):
             cell = board[row][col]
 
             on_edge = (
+
                 row == 0
                 or col == 0
                 or row == size - 1
@@ -300,6 +313,7 @@ def parse_compact_notation_rows(rows):
             if on_edge:
 
                 if cell not in edge_tokens:
+
                     raise ValueError(
                         "Edges must contain X or J"
                     )
@@ -307,6 +321,7 @@ def parse_compact_notation_rows(rows):
             else:
 
                 if cell not in interior_tokens:
+
                     raise ValueError(
                         "Invalid interior token"
                     )
@@ -349,12 +364,39 @@ def is_joker(cell):
     return cell == JOKER
 
 
-def endpoint_matches_player(cell, player):
+def endpoint_matches_player(
+    cell,
+    player,
+):
 
     return (
+
         owner_of(cell) == player
         or is_joker(cell)
     )
+
+
+def pattern_enabled(
+    player,
+    pattern_name,
+):
+
+    groups = (
+        config.player_pattern_groups[player]
+    )
+
+    for group in groups.values():
+
+        patterns = group["patterns"]
+
+        if (
+            pattern_name in patterns
+            and patterns[pattern_name] > 0
+        ):
+
+            return True
+
+    return False
 
 
 def generate_patterns(size):
@@ -435,6 +477,7 @@ def get_cell(board, row, col):
         0 <= row < len(board)
         and 0 <= col < len(board[row])
     ):
+
         return board[row][col]
 
     return None
@@ -487,6 +530,7 @@ def check_shape_win(
                 player_count >= 2
                 and opponent_count >= 1
             ):
+
                 return True
 
     return False
@@ -553,18 +597,22 @@ def has_any_win(board, player):
                         start_cell is not None
                         and middle_cell is not None
                         and end_cell is not None
+
                         and endpoint_matches_player(
                             start_cell,
                             player,
                         )
+
                         and owner_of(
                             middle_cell
                         ) == opponent
+
                         and endpoint_matches_player(
                             end_cell,
                             player,
                         )
                     ):
+
                         count += 1
 
             else:
@@ -578,6 +626,7 @@ def has_any_win(board, player):
                         player,
                         offsets,
                     ):
+
                         count += 1
 
             enabled_results.append(

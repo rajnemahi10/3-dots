@@ -18,9 +18,11 @@ from modular_gui.board import (
     generate_moves,
     get_all_moves,
     resolve_move_outcome,
+    wins_including_cell,
+    get_required_highlight_patterns,
 )
 
-BOARD_PIXELS = 420
+BOARD_PIXELS = 360
 MARGIN = 10
 BOARD_EDGE_PADDING = 10
 
@@ -79,16 +81,14 @@ class PatternGameApp:
 
         self.root.title("Pattern Game")
 
-        self.root.geometry("1450x900")
-
-        self.root.resizable(True, True)
+        self.root.geometry("1500x1050")
 
         self.rng = random.Random()
 
         self.player_1_var = tk.StringVar(value="human")
         self.player_2_var = tk.StringVar(value="monte_carlo")
 
-        self.board_size_var = tk.StringVar(value="5")
+        self.board_size_var = tk.StringVar(value="6")
 
         self.board = []
 
@@ -100,9 +100,18 @@ class PatternGameApp:
         self.game_over = False
         self.game_started = False
 
+        self.move_history = []
+
+        self.red_highlights = []
+        self.green_highlights = []
+
+        self.status_text = tk.StringVar(
+            value="Ready"
+        )
+
         self.pattern_controls = {}
 
-        self.group_modes = {}
+        self.report_labels = {}
 
         self.main_container = ttk.Frame(
             self.root
@@ -120,20 +129,18 @@ class PatternGameApp:
         self.left_panel.pack(
             side="left",
             fill="y",
-            padx=8,
-            pady=8,
+            padx=10,
+            pady=10,
         )
 
-        self.right_panel = ttk.Frame(
+        self.center_panel = ttk.Frame(
             self.main_container
         )
 
-        self.right_panel.pack(
-            side="right",
-            fill="both",
+        self.center_panel.pack(
+            side="left",
             expand=True,
-            padx=8,
-            pady=8,
+            pady=10,
         )
 
         self._build_controls()
@@ -147,7 +154,7 @@ class PatternGameApp:
         )
 
         self.canvas = tk.Canvas(
-            self.right_panel,
+            self.center_panel,
             width=canvas_size,
             height=canvas_size,
             bg="white",
@@ -155,13 +162,53 @@ class PatternGameApp:
         )
 
         self.canvas.pack(
-            expand=True,
+            pady=10,
         )
+
+        self.status_label = ttk.Label(
+            self.center_panel,
+            textvariable=self.status_text,
+            font=("Arial", 16, "bold"),
+        )
+
+        self.status_label.pack(
+            pady=5,
+        )
+
+        legend_frame = ttk.LabelFrame(
+            self.center_panel,
+            text="Legend",
+        )
+
+        legend_frame.pack(
+            pady=8,
+            fill="x",
+        )
+
+        ttk.Label(
+            legend_frame,
+            text="Light Red = Red winning patterns",
+            font=("Arial", 11),
+        ).pack(anchor="w", padx=10)
+
+        ttk.Label(
+            legend_frame,
+            text="Light Green = Green winning patterns",
+            font=("Arial", 11),
+        ).pack(anchor="w", padx=10)
+
+        ttk.Label(
+            legend_frame,
+            text="Blue = Joker",
+            font=("Arial", 11),
+        ).pack(anchor="w", padx=10)
 
         self.canvas.bind(
             "<Button-1>",
             self._handle_click,
         )
+
+        self._build_reports()
 
         self.new_game()
 
@@ -270,6 +317,17 @@ class PatternGameApp:
             pady=5,
         )
 
+        ttk.Button(
+            controls,
+            text="Previous Move",
+            command=self.previous_move,
+        ).grid(
+            row=0,
+            column=8,
+            padx=5,
+            pady=5,
+        )
+
         self._build_pattern_controls()
 
     def _build_pattern_controls(self):
@@ -334,37 +392,6 @@ class PatternGameApp:
                 padx=5,
             )
 
-            mode_var = tk.StringVar(
-                value="or"
-            )
-
-            self.group_modes[
-                (player, group_name)
-            ] = mode_var
-
-            mode_row = ttk.Frame(
-                group_frame
-            )
-
-            mode_row.pack(
-                anchor="w",
-                pady=2,
-            )
-
-            ttk.Label(
-                mode_row,
-                text="Mode",
-                width=10,
-            ).pack(side="left")
-
-            ttk.Combobox(
-                mode_row,
-                textvariable=mode_var,
-                values=["and", "or"],
-                width=6,
-                state="readonly",
-            ).pack(side="left")
-
             for pattern in patterns:
 
                 row = ttk.Frame(
@@ -373,7 +400,7 @@ class PatternGameApp:
 
                 row.pack(
                     anchor="w",
-                    pady=1,
+                    pady=2,
                 )
 
                 ttk.Label(
@@ -413,6 +440,158 @@ class PatternGameApp:
                     )
                 ] = var
 
+    def _build_reports(self):
+
+        reports_frame = ttk.LabelFrame(
+            self.center_panel,
+            text="Winning Statistics",
+        )
+
+        reports_frame.pack(
+            pady=10,
+            fill="x",
+        )
+
+        players_container = ttk.Frame(
+            reports_frame
+        )
+
+        players_container.pack(
+            padx=10,
+        )
+
+        for player in (1, 2):
+
+            outer = ttk.LabelFrame(
+                players_container,
+                text=f"{PLAYER_COLORS[player]}",
+            )
+
+            outer.pack(
+                side="left",
+                padx=8,
+                pady=5,
+                anchor="n",
+            )
+            
+
+            left_col = ttk.Frame(outer)
+            left_col.pack(
+                side="left",
+                padx=4,
+                anchor="n",
+            )
+
+            right_col = ttk.Frame(outer)
+            right_col.pack(
+                side="left",
+                padx=4,
+                anchor="n",
+            )
+
+            # ------------------------
+            # LEFT COLUMN
+            # Lines + Triangles
+            # ------------------------
+
+            for section_name in (
+                "lines",
+                "triangles",
+            ):
+
+                title = ttk.Label(
+                    left_col,
+                    text=section_name.upper(),
+                    font=(
+                        "Arial",
+                        10,
+                        "bold",
+                    ),
+                )
+
+                title.pack(
+                    anchor="w",
+                    pady=(6, 2),
+                )
+
+                for pattern in GROUPS[
+                    section_name
+                ]:
+
+                    label = ttk.Label(
+
+                        left_col,
+
+                        text=(
+                            f"{pattern:<12}"
+                            f"0/0 •"
+                        ),
+
+                        font=(
+                            "Consolas",
+                            10,
+                        ),
+                    )
+
+                    label.pack(
+                        anchor="w",
+                        padx=4,
+                        pady=1,
+                    )
+
+                    self.report_labels[
+                        (player, pattern)
+                    ] = label
+
+            # ------------------------
+            # RIGHT COLUMN
+            # Corners
+            # ------------------------
+
+            title = ttk.Label(
+                right_col,
+                text="CORNERS",
+                font=(
+                    "Arial",
+                    10,
+                    "bold",
+                ),
+            )
+
+            title.pack(
+                anchor="w",
+                pady=(6, 2),
+            )
+
+            for pattern in GROUPS[
+                "corners"
+            ]:
+
+                label = ttk.Label(
+
+                    right_col,
+
+                    text=(
+                        f"{pattern:<15}"
+                        f"0/0 •"
+                    ),
+
+                    font=(
+                        "Consolas",
+                        10,
+                    ),
+                )
+
+                label.pack(
+                    anchor="w",
+                    padx=4,
+                    pady=1,
+                )
+
+                self.report_labels[
+                    (player, pattern)
+                ] = label
+
     def _apply_pattern_settings(self):
 
         for player in (1, 2):
@@ -423,9 +602,7 @@ class PatternGameApp:
                     player
                 ][group_name]
 
-                group["mode"] = self.group_modes[
-                    (player, group_name)
-                ].get()
+                group["mode"] = "or"
 
                 for pattern in patterns:
 
@@ -440,6 +617,75 @@ class PatternGameApp:
                     group["patterns"][
                         pattern
                     ] = count
+
+    def _update_reports(self):
+
+        red_counts = wins_including_cell(
+            self.board,
+            1,
+            None,
+        )
+
+        green_counts = wins_including_cell(
+            self.board,
+            2,
+            None,
+        )
+
+        for player, counts in (
+
+            (1, red_counts),
+            (2, green_counts),
+
+        ):
+
+            groups = (
+                engine.config
+                .player_pattern_groups[player]
+            )
+
+            for group in groups.values():
+
+                for pattern, needed in (
+                    group["patterns"].items()
+                ):
+
+                    actual = counts.get(
+                        pattern,
+                        0,
+                    )
+
+                    success = (
+                        needed > 0
+                        and actual >= needed
+                    )
+
+                    symbol = "✓" if success else "•"
+
+                    self.report_labels[
+                        (player, pattern)
+                    ].config(
+
+                        text=(
+                            f"{pattern:<12}"
+                            f"{actual}/{needed} "
+                            f"{symbol}"
+                        )
+                    )
+
+        self.red_highlights = (
+            get_required_highlight_patterns(
+                self.board,
+                1,
+            )
+        )
+
+        self.green_highlights = (
+            get_required_highlight_patterns(
+                self.board,
+                2,
+            )
+        )
 
     def start_game(self):
 
@@ -477,6 +723,37 @@ class PatternGameApp:
         self.game_over = False
         self.game_started = False
 
+        self.move_history = []
+
+        self.status_text.set(
+            "Ready"
+        )
+
+        self._update_reports()
+
+        self._redraw()
+
+    def previous_move(self):
+
+        if not self.move_history:
+            return
+
+        board, player = self.move_history.pop()
+
+        self.board = [
+            row[:]
+            for row in board
+        ]
+
+        self.current_player = player
+
+        self.selected = None
+        self.legal_moves = []
+
+        self.game_over = False
+
+        self._update_reports()
+
         self._redraw()
 
     def _redraw(self):
@@ -489,6 +766,8 @@ class PatternGameApp:
             self.cell_size,
             origin_x=self.board_origin,
             origin_y=self.board_origin,
+            red_patterns=self.red_highlights,
+            green_patterns=self.green_highlights,
         )
 
     def _advance_turn(self):
@@ -513,6 +792,8 @@ class PatternGameApp:
         moved_to,
     ):
 
+        self._update_reports()
+
         outcome = resolve_move_outcome(
             self.board,
             self.current_player,
@@ -523,9 +804,8 @@ class PatternGameApp:
 
             self.game_over = True
 
-            messagebox.showinfo(
-                "Pattern Game",
-                "Draw!",
+            self.status_text.set(
+                "Draw! Both players satisfied conditions."
             )
 
             return True
@@ -536,9 +816,8 @@ class PatternGameApp:
 
             winner = outcome["winner"]
 
-            messagebox.showinfo(
-                "Pattern Game",
-                f"{PLAYER_COLORS[winner]} wins!",
+            self.status_text.set(
+                f"{PLAYER_COLORS[winner]} wins!"
             )
 
             return True
@@ -580,14 +859,6 @@ class PatternGameApp:
         )
 
         if not legal_moves:
-
-            self.game_over = True
-
-            messagebox.showinfo(
-                "Pattern Game",
-                "Draw: no legal moves.",
-            )
-
             return
 
         chooser = AI_HANDLERS.get(
@@ -604,15 +875,15 @@ class PatternGameApp:
         )
 
         if move is None:
-
-            self.game_over = True
-
-            messagebox.showinfo(
-                "Pattern Game",
-                "Draw: no legal moves.",
-            )
-
             return
+
+        self.move_history.append(
+
+            (
+                [row[:] for row in self.board],
+                self.current_player,
+            )
+        )
 
         apply_move(
             self.board,
@@ -695,6 +966,14 @@ class PatternGameApp:
                 row,
                 col,
             ) in self.legal_moves:
+
+                self.move_history.append(
+
+                    (
+                        [row[:] for row in self.board],
+                        self.current_player,
+                    )
+                )
 
                 apply_move(
                     self.board,

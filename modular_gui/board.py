@@ -82,14 +82,31 @@ def generate_moves(board, row, col):
             nr = row + dr * step
             nc = col + dc * step
 
-            if (
-
+            if not (
                 0 <= nr < board_size
                 and 0 <= nc < board_size
-                and board[nr][nc]
+            ):
+                continue
+
+            if step == 2:
+
+                middle_row = row + dr
+                middle_col = col + dc
+
+                if (
+                    board[middle_row][middle_col]
+                    != engine.EMPTY
+                ):
+                    continue
+
+            if (
+                board[nr][nc]
                 == engine.EMPTY
             ):
-                moves.append((nr, nc))
+
+                moves.append(
+                    (nr, nc)
+                )
 
     return moves
 
@@ -200,17 +217,216 @@ def _pattern_is_win(
     )
 
 
-def wins_including_cell(
+def _shape_is_win(
     board,
     player,
-    moved_cell,
+    shape_name,
+):
+
+    size = len(board)
+
+    opponent = (
+        2 if player == 1 else 1
+    )
+
+    matches = []
+
+    def endpoint(cell):
+
+        return engine.endpoint_matches_player(
+            cell,
+            player,
+        )
+
+    def middle(cell):
+
+        return (
+            engine.owner_of(cell)
+            == opponent
+        )
+
+    for r in range(size):
+
+        for c in range(size):
+
+            try:
+
+                if shape_name == "triangle_up":
+
+                    a = board[r + 1][c]
+                    b = board[r][c + 1]
+                    d = board[r + 1][c + 2]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r + 1, c),
+                                (r, c + 1),
+                                (r + 1, c + 2),
+                            ]
+                        )
+
+                elif shape_name == "triangle_down":
+
+                    a = board[r][c]
+                    b = board[r + 1][c + 1]
+                    d = board[r][c + 2]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c),
+                                (r + 1, c + 1),
+                                (r, c + 2),
+                            ]
+                        )
+
+                elif shape_name == "triangle_left":
+
+                    a = board[r][c]
+                    b = board[r + 1][c + 1]
+                    d = board[r + 2][c]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c),
+                                (r + 1, c + 1),
+                                (r + 2, c),
+                            ]
+                        )
+
+                elif shape_name == "triangle_right":
+
+                    a = board[r][c + 1]
+                    b = board[r + 1][c]
+                    d = board[r + 2][c + 1]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c + 1),
+                                (r + 1, c),
+                                (r + 2, c + 1),
+                            ]
+                        )
+
+                elif shape_name == "corner_ul":
+
+                    a = board[r][c + 1]
+                    b = board[r][c]
+                    d = board[r + 1][c]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c + 1),
+                                (r, c),
+                                (r + 1, c),
+                            ]
+                        )
+
+                elif shape_name == "corner_ur":
+
+                    a = board[r][c]
+                    b = board[r][c + 1]
+                    d = board[r + 1][c + 1]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c),
+                                (r, c + 1),
+                                (r + 1, c + 1),
+                            ]
+                        )
+
+                elif shape_name == "corner_dl":
+
+                    a = board[r][c]
+                    b = board[r + 1][c]
+                    d = board[r + 1][c + 1]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c),
+                                (r + 1, c),
+                                (r + 1, c + 1),
+                            ]
+                        )
+
+                elif shape_name == "corner_dr":
+
+                    a = board[r][c + 1]
+                    b = board[r + 1][c + 1]
+                    d = board[r + 1][c]
+
+                    if (
+                        endpoint(a)
+                        and middle(b)
+                        and endpoint(d)
+                    ):
+
+                        matches.append(
+                            [
+                                (r, c + 1),
+                                (r + 1, c + 1),
+                                (r + 1, c),
+                            ]
+                        )
+
+            except IndexError:
+
+                pass
+
+    return matches
+
+def get_all_matching_patterns(
+    board,
+    player,
 ):
 
     engine.ensure_patterns_for_board(
         board
     )
 
-    counts = {}
+    matches = {}
 
     all_patterns = (
 
@@ -220,9 +436,8 @@ def wins_including_cell(
 
     for pattern_name in all_patterns:
 
-        counts[pattern_name] = 0
+        matches[pattern_name] = []
 
-        # LINE PATTERNS
         if pattern_name in engine.PATTERNS:
 
             pattern_list = (
@@ -233,79 +448,66 @@ def wins_including_cell(
 
             for pattern in pattern_list:
 
-                if (
-                    moved_cell is not None
-                    and moved_cell not in pattern
-                ):
-                    continue
-
                 if _pattern_is_win(
                     board,
                     player,
                     pattern,
                 ):
-                    counts[
-                        pattern_name
-                    ] += 1
 
-        # SHAPE PATTERNS
+                    matches[
+                        pattern_name
+                    ].append(pattern)
+
         else:
 
-            for offsets in (
-                engine.SHAPE_PATTERNS[
-                    pattern_name
-                ]
-            ):
+            found = _shape_is_win(
+                board,
+                player,
+                pattern_name,
+            )
 
-                size = len(board)
+            matches[
+                pattern_name
+            ].extend(found)
 
-                max_r = max(
-                    dr
-                    for dr, dc
-                    in offsets
-                )
+    return matches
 
-                max_c = max(
-                    dc
-                    for dr, dc
-                    in offsets
-                )
 
-                for row in range(
-                    size - max_r
-                ):
+def wins_including_cell(
+    board,
+    player,
+    moved_cell,
+):
 
-                    for col in range(
-                        size - max_c
-                    ):
+    matches = get_all_matching_patterns(
+        board,
+        player,
+    )
 
-                        cells = []
+    counts = {}
 
-                        for dr, dc in offsets:
+    for pattern_name, pattern_matches in (
+        matches.items()
+    ):
 
-                            cells.append(
-                                (
-                                    row + dr,
-                                    col + dc,
-                                )
-                            )
+        if moved_cell is None:
 
-                        if (
-                            moved_cell
-                            is not None
-                            and moved_cell
-                            not in cells
-                        ):
-                            continue
+            counts[
+                pattern_name
+            ] = len(pattern_matches)
 
-                        if engine.check_shape_win(
-                            board,
-                            player,
-                            offsets,
-                        ):
-                            counts[
-                                pattern_name
-                            ] += 1
+            continue
+
+        filtered = []
+
+        for pattern in pattern_matches:
+
+            if moved_cell in pattern:
+                filtered.append(pattern)
+
+        counts[
+            pattern_name
+        ] = len(filtered)
 
     return counts
 
@@ -339,7 +541,6 @@ def evaluate_group(
             >= needed_count
         )
 
-    # ignored if empty
     if not enabled_results:
         return True
 
@@ -348,6 +549,48 @@ def evaluate_group(
         return all(enabled_results)
 
     return any(enabled_results)
+
+
+def get_required_highlight_patterns(
+    board,
+    player,
+):
+
+    matches = get_all_matching_patterns(
+        board,
+        player,
+    )
+
+    groups = (
+        engine.config
+        .player_pattern_groups[player]
+    )
+
+    highlighted = []
+
+    for group in groups.values():
+
+        patterns = group["patterns"]
+
+        for pattern_name, needed in (
+            patterns.items()
+        ):
+
+            if needed <= 0:
+                continue
+
+            pattern_matches = matches.get(
+                pattern_name,
+                [],
+            )
+
+            if len(pattern_matches) >= needed:
+
+                highlighted.extend(
+                    pattern_matches[:needed]
+                )
+
+    return highlighted
 
 
 def player_has_win(board, player):
