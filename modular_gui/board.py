@@ -201,19 +201,15 @@ def _pattern_is_win(
         and middle_cell is not None
         and end_cell is not None
 
-        and engine.endpoint_matches_player(
+        and engine.valid_endpoints(
             start_cell,
+            end_cell,
             player,
         )
 
         and engine.owner_of(
             middle_cell
         ) == opponent
-
-        and engine.endpoint_matches_player(
-            end_cell,
-            player,
-        )
     )
 
 
@@ -230,13 +226,6 @@ def _shape_is_win(
     )
 
     matches = []
-
-    def endpoint(cell):
-
-        return engine.endpoint_matches_player(
-            cell,
-            player,
-        )
 
     def middle(cell):
 
@@ -258,9 +247,12 @@ def _shape_is_win(
                     d = board[r + 1][c + 2]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -278,9 +270,12 @@ def _shape_is_win(
                     d = board[r][c + 2]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -298,9 +293,12 @@ def _shape_is_win(
                     d = board[r + 2][c]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -318,9 +316,12 @@ def _shape_is_win(
                     d = board[r + 2][c + 1]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -338,9 +339,12 @@ def _shape_is_win(
                     d = board[r + 1][c]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -358,9 +362,12 @@ def _shape_is_win(
                     d = board[r + 1][c + 1]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -378,9 +385,12 @@ def _shape_is_win(
                     d = board[r + 1][c + 1]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -398,9 +408,12 @@ def _shape_is_win(
                     d = board[r + 1][c]
 
                     if (
-                        endpoint(a)
+                        engine.valid_endpoints(
+                            a,
+                            d,
+                            player,
+                        )
                         and middle(b)
-                        and endpoint(d)
                     ):
 
                         matches.append(
@@ -416,6 +429,7 @@ def _shape_is_win(
                 pass
 
     return matches
+
 
 def get_all_matching_patterns(
     board,
@@ -556,41 +570,39 @@ def get_required_highlight_patterns(
     player,
 ):
 
-    matches = get_all_matching_patterns(
-        board,
-        player,
-    )
-
     groups = (
         engine.config
         .player_pattern_groups[player]
     )
 
-    highlighted = []
+    all_matches = get_all_matching_patterns(
+        board,
+        player,
+    )
+
+    highlights = []
 
     for group in groups.values():
 
-        patterns = group["patterns"]
-
-        for pattern_name, needed in (
-            patterns.items()
+        for pattern, needed in (
+            group["patterns"].items()
         ):
 
             if needed <= 0:
                 continue
 
-            pattern_matches = matches.get(
-                pattern_name,
+            matches = all_matches.get(
+                pattern,
                 [],
             )
 
-            if len(pattern_matches) >= needed:
+            if len(matches) >= needed:
 
-                highlighted.extend(
-                    pattern_matches[:needed]
+                highlights.extend(
+                    matches[:needed]
                 )
 
-    return highlighted
+    return highlights
 
 
 def player_has_win(board, player):

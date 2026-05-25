@@ -71,16 +71,11 @@ def draw_game(
 
     canvas.delete("all")
 
-    draw_pattern_overlays(
-        canvas,
-        red_patterns,
-        green_patterns,
-        cell_size,
-        origin_x,
-        origin_y,
-    )
-
     size = len(board)
+
+    # -----------------------------
+    # DRAW BOARD
+    # -----------------------------
 
     for row in range(size):
 
@@ -163,9 +158,26 @@ def draw_game(
                 ),
             )
 
+    # -----------------------------
+    # DRAW GRID
+    # -----------------------------
+
     draw_grid_lines(
         canvas,
         size,
+        cell_size,
+        origin_x,
+        origin_y,
+    )
+
+    # -----------------------------
+    # DRAW HIGHLIGHTS ON TOP
+    # -----------------------------
+
+    draw_pattern_overlays(
+        canvas,
+        red_patterns,
+        green_patterns,
         cell_size,
         origin_x,
         origin_y,
@@ -231,7 +243,7 @@ def draw_pattern_overlays(
             canvas,
             pattern,
 
-            "#ffb3b3",
+            "#ff6666",
 
             cell_size,
             origin_x,
@@ -245,7 +257,7 @@ def draw_pattern_overlays(
             canvas,
             pattern,
 
-            "#b8ffb8",
+            "#66ff66",
 
             cell_size,
             origin_x,
@@ -287,32 +299,37 @@ def draw_single_pattern(
     x2, y2 = centers[1]
     x3, y3 = centers[2]
 
-    draw_glow_cell(
-        canvas,
-        pattern[0],
-        color,
-        cell_size,
-        origin_x,
-        origin_y,
-    )
+    # glow cells
 
-    draw_glow_cell(
-        canvas,
-        pattern[1],
-        color,
-        cell_size,
-        origin_x,
-        origin_y,
-    )
+    for row, col in pattern:
 
-    draw_glow_cell(
-        canvas,
-        pattern[2],
-        color,
-        cell_size,
-        origin_x,
-        origin_y,
-    )
+        gx1 = (
+            origin_x
+            + col * cell_size
+            + 6
+        )
+
+        gy1 = (
+            origin_y
+            + row * cell_size
+            + 6
+        )
+
+        gx2 = gx1 + cell_size - 12
+        gy2 = gy1 + cell_size - 12
+
+        canvas.create_rectangle(
+
+            gx1,
+            gy1,
+            gx2,
+            gy2,
+
+            outline=color,
+            width=5,
+        )
+
+    # connect pattern
 
     canvas.create_line(
 
@@ -323,7 +340,7 @@ def draw_single_pattern(
         y2,
 
         fill=color,
-        width=8,
+        width=7,
         smooth=True,
     )
 
@@ -336,84 +353,24 @@ def draw_single_pattern(
         y3,
 
         fill=color,
-        width=8,
+        width=7,
         smooth=True,
     )
 
-    canvas.create_oval(
+    # dots
 
-        x1 - 8,
-        y1 - 8,
+    radius = 8
 
-        x1 + 8,
-        y1 + 8,
+    for x, y in centers:
 
-        fill=color,
-        outline="",
-    )
+        canvas.create_oval(
 
-    canvas.create_oval(
+            x - radius,
+            y - radius,
 
-        x2 - 8,
-        y2 - 8,
+            x + radius,
+            y + radius,
 
-        x2 + 8,
-        y2 + 8,
-
-        fill=color,
-        outline="",
-    )
-
-    canvas.create_oval(
-
-        x3 - 8,
-        y3 - 8,
-
-        x3 + 8,
-        y3 + 8,
-
-        fill=color,
-        outline="",
-    )
-
-
-def draw_glow_cell(
-    canvas,
-    cell,
-    color,
-    cell_size,
-    origin_x,
-    origin_y,
-):
-
-    row, col = cell
-
-    x1 = (
-        origin_x
-        + col * cell_size
-    )
-
-    y1 = (
-        origin_y
-        + row * cell_size
-    )
-
-    x2 = x1 + cell_size
-    y2 = y1 + cell_size
-
-    padding = 5
-
-    canvas.create_rectangle(
-
-        x1 + padding,
-        y1 + padding,
-
-        x2 - padding,
-        y2 - padding,
-
-        fill=color,
-
-        outline="",
-
-        stipple="gray25",
-    )
+            fill=color,
+            outline="",
+        )

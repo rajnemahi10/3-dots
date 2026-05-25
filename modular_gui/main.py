@@ -804,6 +804,8 @@ class PatternGameApp:
 
             self.game_over = True
 
+            self._update_reports()
+            self._redraw()
             self.status_text.set(
                 "Draw! Both players satisfied conditions."
             )
@@ -816,6 +818,8 @@ class PatternGameApp:
 
             winner = outcome["winner"]
 
+            self._update_reports()
+            self._redraw()
             self.status_text.set(
                 f"{PLAYER_COLORS[winner]} wins!"
             )

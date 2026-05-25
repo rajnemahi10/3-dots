@@ -375,6 +375,39 @@ def endpoint_matches_player(
         or is_joker(cell)
     )
 
+def valid_endpoints(
+    first_cell,
+    last_cell,
+    player,
+):
+
+    first_matches = endpoint_matches_player(
+        first_cell,
+        player,
+    )
+
+    last_matches = endpoint_matches_player(
+        last_cell,
+        player,
+    )
+
+    if not (
+        first_matches
+        and last_matches
+    ):
+        return False
+
+    # prevent Joker + Joker
+
+    if (
+        is_joker(first_cell)
+        and is_joker(last_cell)
+    ):
+
+        return False
+
+    return True
+
 
 def pattern_enabled(
     player,
