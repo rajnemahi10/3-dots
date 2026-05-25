@@ -85,34 +85,34 @@ STARTING_NOTATION_BY_SIZE = {
 
     5: [
 
-        "X X J X J X X",
+        "X X J X X X X",
 
-        "J . R . G . X",
+        "X . r . g . X",
 
-        "X . r . g . J",
+        "J . . . . . X",
 
-        "J . J . . . X",
+        "X R . . . G X",
 
-        "X . g . r . J",
+        "X . . . . . J",
 
-        "J . G . R . X",
+        "X . g . r . X",
 
-        "X X J X J X X",
+        "X X X J X X X",
     ],
 
     6: [
 
         "X X J X X J X X",
 
-        "J . . R . . . X",
+        "J . . . R . . X",
 
-        "X . r . . g . J",
+        "X . . . . g . J",
 
         "X . . J . . . X",
 
         "J . . . . . . X",
 
-        "X . g . . r . J",
+        "X . . . . r . J",
 
         "X . . . G . . X",
 
@@ -125,7 +125,7 @@ STARTING_NOTATION_BY_SIZE = {
 
         "X . . R . G . . X",
 
-        "J . r . . . g . X",
+        "J . . . . . . . X",
 
         "X . . J . . . . J",
 
