@@ -1,4 +1,13 @@
-from modular_gui.board import apply_move, get_all_moves, resolve_move_outcome
+from functools import lru_cache
+
+from modular_gui.board import (
+    apply_move,
+    freeze_board,
+    get_all_moves,
+    resolve_move_outcome,
+    rules_signature,
+    thaw_board,
+)
 
 
 DEFAULT_ROLLOUTS = 24
@@ -30,6 +39,22 @@ def move_results_in_win(board, move, player):
 
 
 def evaluate_board(board, player):
+    return _cached_evaluate_board(
+        freeze_board(board),
+        player,
+        rules_signature(),
+    )
+
+
+@lru_cache(maxsize=8192)
+def _cached_evaluate_board(
+    board_key,
+    player,
+    config_key,
+):
+    del config_key
+
+    board = thaw_board(board_key)
     opponent = 2 if player == 1 else 1
 
     player_winning_moves = sum(
@@ -51,6 +76,19 @@ def evaluate_board(board, player):
         20 * (player_winning_moves - opponent_winning_moves)
         + (player_mobility - opponent_mobility)
     )
+
+
+def clear_cache():
+    _cached_evaluate_board.cache_clear()
+
+
+def cache_report():
+    return {
+        "evaluate_board": (
+            _cached_evaluate_board
+            .cache_info()
+        ),
+    }
 
 
 def rollout_result(board, next_player, root_player, rng, rollout_depth):

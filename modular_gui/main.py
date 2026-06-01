@@ -5,6 +5,9 @@ from tkinter import ttk, messagebox
 from modular_gui import engine
 from modular_gui.visuals import draw_game
 
+from modular_gui.board import clear_caches
+from modular_gui import ai_minimax
+
 from modular_gui import (
     ai_random,
     ai_heuristic,
@@ -26,7 +29,7 @@ BOARD_PIXELS = 360
 MARGIN = 10
 BOARD_EDGE_PADDING = 10
 
-BOARD_SIZES = [4, 5, 6, 7]
+BOARD_SIZES = [4, 5, 6, 7, 9]
 
 CONTROLLERS = [
     "human",
@@ -279,7 +282,7 @@ class PatternGameApp:
             pady=5,
         )
 
-        ttk.Combobox(
+        board_size_box = ttk.Combobox(
             controls,
             textvariable=self.board_size_var,
             values=[
@@ -288,11 +291,18 @@ class PatternGameApp:
             ],
             width=8,
             state="readonly",
-        ).grid(
+        )
+
+        board_size_box.grid(
             row=0,
             column=5,
             padx=5,
             pady=5,
+        )
+
+        board_size_box.bind(
+            "<<ComboboxSelected>>",
+            self._handle_board_size_change,
         )
 
         ttk.Button(
@@ -689,11 +699,32 @@ class PatternGameApp:
 
     def start_game(self):
 
+        selected_size = int(
+            self.board_size_var.get()
+        )
+
+        if (
+            not self.board
+            or len(self.board) != selected_size
+        ):
+            self.new_game()
+
         self.game_started = True
 
         self._schedule_ai_turn()
 
+    def _handle_board_size_change(
+        self,
+        _event,
+    ):
+
+        self.new_game()
+
     def new_game(self):
+
+        clear_caches()
+        ai_minimax.clear_cache()
+        ai_monte_carlo.clear_cache()
 
         self._apply_pattern_settings()
 

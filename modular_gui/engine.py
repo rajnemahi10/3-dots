@@ -6,6 +6,8 @@ Cell: TypeAlias = Literal[
     "g",
     "R",
     "G",
+    "Sr",
+    "Sg",
     "J",
     "X",
 ]
@@ -15,6 +17,8 @@ RED_SINGLE: Cell = "r"
 GREEN_SINGLE: Cell = "g"
 RED_LONG: Cell = "R"
 GREEN_LONG: Cell = "G"
+RED_SWIFT: Cell = "Sr"
+GREEN_SWIFT: Cell = "Sg"
 JOKER: Cell = "J"
 BLOCKED: Cell = "X"
 
@@ -68,6 +72,7 @@ CURRENT_PATTERN_SIZE = None
 
 STARTING_NOTATION_BY_SIZE = {
 
+    #lines
     4: [
 
         "X X X X X X",
@@ -82,63 +87,195 @@ STARTING_NOTATION_BY_SIZE = {
 
         "X X X X X X",
     ],
+    #lines
+    # 4: [
 
+    #     "X X J X X J",
+
+    #     "X . . r . X",
+
+    #     "X R . . . X",
+
+    #     "J . . . G J",
+
+    #     "X . g . . X",
+
+    #     "X J X X J X",
+
+    # ],
+
+    #lines
+    # 5: [
+
+    #     "X X J X X X X",
+
+    #     "X . r . g . X",
+
+    #     "J . . . . . X",
+
+    #     "X R . . . G X",
+
+    #     "X . . . . . J",
+
+    #     "X . g . r . X",
+
+    #     "X X X J X X X",
+    # ],
+
+    #corners
     5: [
 
-        "X X J X X X X",
-
-        "X . r . g . X",
-
-        "J . . . . . X",
-
-        "X R . . . G X",
+        "X J X X J X X",
 
         "X . . . . . J",
 
-        "X . g . r . X",
+        "J G . r r . X",
 
-        "X X X J X X X",
+        "X . . . . . X",
+
+        "X . R . . . J",
+
+        "J . g g . . X",
+
+        "X X J X X J X",
     ],
 
+    #lines
+    # 6: [
+
+    #     "X X J X X J X X",
+
+    #     "J . . . R . . X",
+
+    #     "X . . . . g . J",
+
+    #     "X . . J . . . X",
+
+    #     "J . . . . . . X",
+
+    #     "X . . . . r . J",
+
+    #     "X . . . G . . X",
+
+    #     "X X J X X J X X",
+    # ],
+
+    #corner
     6: [
-
         "X X J X X J X X",
-
-        "J . . . R . . X",
-
-        "X . . . . g . J",
-
-        "X . . J . . . X",
-
-        "J . . . . . . X",
-
-        "X . . . . r . J",
-
-        "X . . . G . . X",
-
-        "X X J X X J X X",
+        "X . . . . . . J",
+        "J . . g . . . X",
+        "X . . J . . g X",
+        "X . . . G . . J",
+        "J R . . . r . X",
+        "X . r . . . . X",
+        "X J X X J X X J",
     ],
 
+    #lines
+    # 7: [
+
+    #     "X X J X X X J X X",
+
+    #     "X . . R . G . . X",
+
+    #     "J . . . . . . . X",
+
+    #     "X . . J . . . . J",
+
+    #     "X . . . . . . . X",
+
+    #     "X . g . . . r . J",
+
+    #     "J . . . . . . . X",
+
+    #     "X . . G . R . . J",
+
+    #     "X X J X X X J X X",
+    # ],
+
+    #shape - snowflake
     7: [
 
-        "X X J X X X J X X",
-
-        "X . . R . G . . X",
-
-        "J . . . . . . . X",
-
-        "X . . J . . . . J",
-
-        "X . . . . . . . X",
-
-        "X . g . . . r . J",
-
-        "J . . . . . . . X",
-
-        "X . . G . R . . J",
-
-        "X X J X X X J X X",
+        "J . . J . . J",
+        ". r . . . g .",
+        ". . X . X . .",
+        "J . . . . . J",
+        ". . X . X . .",
+        ". Sg . . . Sr .",
+        "J . . J . . J",
     ],
+
+    #hourglass
+    # 7: [
+
+    #     "J . . J . . J",
+
+    #     "X R . . . G X",
+
+    #     "X X . . . X X",
+
+    #     "X J . . . J X",
+
+    #     "X X . . . X X",
+
+    #     "X g . . . r X",
+
+    #     "J . . J . . J",
+    # ],
+    
+    #hexagonal
+    # 9: [
+
+    #     "X X J . R . J X X",
+    #     "X X . . . . . X X",
+    #     "J . . . . . . . J",
+    #     ". . . r . g . . .",
+    #     "G . . . . . . . R",
+    #     ". . . g . r . . .",
+    #     "J . . . . . . . J",
+    #     "X X . . . . . X X",
+    #     "X X J . G . J X X",
+    # ],
+
+    9:
+    [
+        "X X X J X X J X X",
+        "X . . . . . . . J",
+        "J . r . . . Sg . X",
+        "X . . . . . . . X",
+        "X . g . J . r . J",
+        "J . . . . . . . X",
+        "X . Sr . . . g . X",
+        "X . . . . . . . J",
+        "J X X J X X J X X",
+    ],
+
+    #diamond shape
+    # 9: [
+
+    #     "X X X X J X X X X",
+
+    #     "X X X . g . X X X",
+
+    #     "X J . . . . . J X",
+
+    #     "X . . g . G . . X",
+
+    #     "J . . . . . . . J",
+
+    #     "X . . R . r . . X",
+
+    #     "X J . . . . . J X",
+
+    #     "X X X . r . X X X",
+
+    #     "X X X X J X X X X",
+    # ],
+
+    #
+
+
 }
 
 
@@ -156,10 +293,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "horizontal": 1,
-                        "vertical": 1,
-                        "diag_left": 1,
-                        "diag_right": 1,
+                        "horizontal": 0,
+                        "vertical": 0,
+                        "diag_left": 0,
+                        "diag_right": 0,
                     },
                 },
 
@@ -182,10 +319,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "corner_ul": 0,
-                        "corner_ur": 0,
-                        "corner_dl": 0,
-                        "corner_dr": 0,
+                        "corner_ul": 1,
+                        "corner_ur": 1,
+                        "corner_dl": 1,
+                        "corner_dr": 1,
                     },
                 },
             },
@@ -198,10 +335,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "horizontal": 1,
-                        "vertical": 1,
-                        "diag_left": 1,
-                        "diag_right": 1,
+                        "horizontal": 0,
+                        "vertical": 0,
+                        "diag_left": 0,
+                        "diag_right": 0,
                     },
                 },
 
@@ -224,10 +361,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "corner_ul": 0,
-                        "corner_ur": 0,
-                        "corner_dl": 0,
-                        "corner_dr": 0,
+                        "corner_ul": 1,
+                        "corner_ur": 1,
+                        "corner_dl": 1,
+                        "corner_dr": 1,
                     },
                 },
             },
@@ -248,14 +385,13 @@ def parse_compact_notation_rows(rows):
         GREEN_SINGLE,
         RED_LONG,
         GREEN_LONG,
+        RED_SWIFT,
+        GREEN_SWIFT,
         JOKER,
         BLOCKED,
     }
 
-    edge_tokens = {
-        BLOCKED,
-        JOKER,
-    }
+    edge_tokens = valid_tokens
 
     interior_tokens = valid_tokens
 
@@ -315,7 +451,7 @@ def parse_compact_notation_rows(rows):
                 if cell not in edge_tokens:
 
                     raise ValueError(
-                        "Edges must contain X or J"
+                        "Edges must contain valid board tokens"
                     )
 
             else:
@@ -334,12 +470,14 @@ def owner_of(cell):
     if cell in (
         RED_SINGLE,
         RED_LONG,
+        RED_SWIFT,
     ):
         return 1
 
     if cell in (
         GREEN_SINGLE,
         GREEN_LONG,
+        GREEN_SWIFT,
     ):
         return 2
 
@@ -356,6 +494,14 @@ def is_long_range_piece(cell):
     return cell in (
         RED_LONG,
         GREEN_LONG,
+    )
+
+
+def is_dual_range_piece(cell):
+
+    return cell in (
+        RED_SWIFT,
+        GREEN_SWIFT,
     )
 
 

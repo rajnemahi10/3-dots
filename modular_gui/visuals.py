@@ -9,9 +9,11 @@ CELL_COLORS = {
 
     engine.RED_SINGLE: "#d84c4c",
     engine.RED_LONG: "#8b0000",
+    engine.RED_SWIFT: "#b22222",
 
     engine.GREEN_SINGLE: "#49b649",
     engine.GREEN_LONG: "#006400",
+    engine.GREEN_SWIFT: "#228b22",
 
     engine.JOKER: "#3b82f6",
 
@@ -25,9 +27,11 @@ TEXT_COLORS = {
 
     engine.RED_SINGLE: "white",
     engine.RED_LONG: "white",
+    engine.RED_SWIFT: "white",
 
     engine.GREEN_SINGLE: "white",
     engine.GREEN_LONG: "white",
+    engine.GREEN_SWIFT: "white",
 
     engine.JOKER: "white",
 
@@ -41,9 +45,11 @@ CELL_LABELS = {
 
     engine.RED_SINGLE: "r",
     engine.RED_LONG: "R",
+    engine.RED_SWIFT: "Sr",
 
     engine.GREEN_SINGLE: "g",
     engine.GREEN_LONG: "G",
+    engine.GREEN_SWIFT: "Sg",
 
     engine.JOKER: "J",
 
