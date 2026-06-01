@@ -11,6 +11,11 @@ from modular_gui.board import (
     thaw_board,
 )
 
+SEARCH_STATS = {
+    "nodes": 0,
+    "states": 0,
+    "legal_moves": 0,
+}
 
 DEFAULT_MINIMAX_DEPTH = 3
 INF = 10 ** 9
@@ -258,6 +263,8 @@ def minimax_score(
     last_move_to,
     search_context,
 ):
+
+    SEARCH_STATS["nodes"] += 1
     cache_key = canonical_state_cache_key(
         board,
         moved_cell=last_move_to,
@@ -305,12 +312,17 @@ def minimax_score(
         ] = score
         return score
 
+    raw_moves = get_all_moves(
+        board,
+        current_player,
+    )
+
+    SEARCH_STATS["states"] += 1
+    SEARCH_STATS["legal_moves"] += len(raw_moves)
+
     legal_moves = order_moves(
         board,
-        get_all_moves(
-            board,
-            current_player,
-        ),
+        raw_moves,
         current_player,
         root_player,
         search_context,

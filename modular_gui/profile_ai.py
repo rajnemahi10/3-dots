@@ -4,6 +4,7 @@ import io
 import pstats
 import random
 import time
+from modular_gui import anytime_ai
 
 from modular_gui import (
     ai_heuristic,
@@ -26,6 +27,7 @@ AI_HANDLERS = {
     "heuristic": ai_heuristic.choose_move,
     "minimax": ai_minimax.choose_move,
     "monte_carlo": ai_monte_carlo.choose_move,
+    "anytime": anytime_ai.choose_move,
 }
 
 
