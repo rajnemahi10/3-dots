@@ -8,6 +8,8 @@ from modular_gui.visuals import draw_game
 from modular_gui.board import clear_caches
 from modular_gui import ai_minimax
 
+from modular_gui import fun_ai
+
 from modular_gui import (
     ai_random,
     ai_heuristic,
@@ -37,6 +39,7 @@ CONTROLLERS = [
     "heuristic",
     "minimax",
     "monte_carlo",
+    "fun",
 ]
 
 PLAYER_COLORS = {
@@ -49,6 +52,7 @@ AI_HANDLERS = {
     "heuristic": ai_heuristic.choose_move,
     "minimax": ai_minimax.choose_move,
     "monte_carlo": ai_monte_carlo.choose_move,
+    "fun": fun_ai.choose_move,
 }
 
 GROUPS = {

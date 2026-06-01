@@ -105,40 +105,40 @@ STARTING_NOTATION_BY_SIZE = {
     # ],
 
     #lines
-    # 5: [
-
-    #     "X X J X X X X",
-
-    #     "X . r . g . X",
-
-    #     "J . . . . . X",
-
-    #     "X R . . . G X",
-
-    #     "X . . . . . J",
-
-    #     "X . g . r . X",
-
-    #     "X X X J X X X",
-    # ],
-
-    #corners
     5: [
 
-        "X J X X J X X",
+        "X X J X X X X",
+
+        "X . r . g . X",
+
+        "J . . . . . X",
+
+        "X R . . . G X",
 
         "X . . . . . J",
 
-        "J G . r r . X",
+        "X . g . r . X",
 
-        "X . . . . . X",
-
-        "X . R . . . J",
-
-        "J . g g . . X",
-
-        "X X J X X J X",
+        "X X X J X X X",
     ],
+
+    #corners
+    # 5: [
+
+    #     "X J X X J X X",
+
+    #     "X . . . . . J",
+
+    #     "J G . r r . X",
+
+    #     "X . . . . . X",
+
+    #     "X . R . . . J",
+
+    #     "J . g g . . X",
+
+    #     "X X J X X J X",
+    # ],
 
     #lines
     # 6: [

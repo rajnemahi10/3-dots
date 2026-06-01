@@ -5,6 +5,7 @@ import pstats
 import random
 import time
 from modular_gui import anytime_ai
+from modular_gui import fun_ai
 
 from modular_gui import (
     ai_heuristic,
@@ -28,6 +29,7 @@ AI_HANDLERS = {
     "minimax": ai_minimax.choose_move,
     "monte_carlo": ai_monte_carlo.choose_move,
     "anytime": anytime_ai.choose_move,
+    "fun": fun_ai.choose_move,
 }
 
 
@@ -66,6 +68,12 @@ def print_cache_stats():
 
 def run_profile_session(args):
 
+    wins_p1 = 0
+    wins_p2 = 0
+    draws = 0
+
+    game_lengths = []
+
     base_board = create_board(
         args.board_size
     )
@@ -80,6 +88,8 @@ def run_profile_session(args):
     start = time.perf_counter()
 
     for _ in range(args.games):
+
+        moves_this_game = 0
 
         board = clone_board(base_board)
         current_player = 1
@@ -121,6 +131,8 @@ def run_profile_session(args):
                 move,
             )
 
+            moves_this_game += 1
+
             total_moves += 1
 
             outcome = (
@@ -131,7 +143,23 @@ def run_profile_session(args):
                 )
             )
 
-            if outcome["status"] != "none":
+            if outcome["status"] == "win":
+
+                if outcome["winner"] == 1:
+                    wins_p1 += 1
+                else:
+                    wins_p2 += 1
+
+                
+
+                break
+
+            elif outcome["status"] == "draw":
+
+                draws += 1
+
+                
+
                 break
 
             current_player = (
@@ -140,7 +168,15 @@ def run_profile_session(args):
                 else 1
             )
 
+
+        if moves_this_game > 0:
+            game_lengths.append(
+                moves_this_game
+            )
+
         completed_games += 1
+
+        
 
     elapsed = (
         time.perf_counter()
@@ -150,6 +186,55 @@ def run_profile_session(args):
     print(
         f"games={completed_games}"
     )
+    print()
+
+    print(
+        f"P1 wins={wins_p1}"
+    )
+
+    print(
+        f"P2 wins={wins_p2}"
+    )
+
+    print(
+        f"draws={draws}"
+    )
+
+    print()
+
+    print(
+        f"P1 win %="
+        f"{100*wins_p1/completed_games:.2f}"
+    )
+
+    print(
+        f"P2 win %="
+        f"{100*wins_p2/completed_games:.2f}"
+    )
+
+    print(
+        f"draw %="
+        f"{100*draws/completed_games:.2f}"
+    )
+
+    print()
+
+    print(
+        f"avg_moves_per_game="
+        f"{sum(game_lengths)/len(game_lengths):.2f}"
+    )
+
+    print(
+        f"min_moves="
+        f"{min(game_lengths)}"
+    )
+
+    print(
+        f"max_moves="
+        f"{max(game_lengths)}"
+    )
+
+    print()
     print(
         f"total_moves={total_moves}"
     )
