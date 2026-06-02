@@ -92,6 +92,8 @@ class PatternGameApp:
 
     def __init__(self, root):
 
+        self.pending_ai_job = None
+
         self.root = root
 
         self.root.title("Pattern Game")
@@ -856,6 +858,14 @@ class PatternGameApp:
                 "Draw! Both players satisfied conditions."
             )
 
+            if self.pending_ai_job is not None:
+
+                self.root.after_cancel(
+                    self.pending_ai_job
+                )
+
+                self.pending_ai_job = None    
+
             return True
 
         if outcome["status"] == "win":
@@ -869,6 +879,14 @@ class PatternGameApp:
             self.status_text.set(
                 f"{PLAYER_COLORS[winner]} wins!"
             )
+
+            if self.pending_ai_job is not None:
+
+                self.root.after_cancel(
+                    self.pending_ai_job
+                )
+
+                self.pending_ai_job = None
 
             return True
 
@@ -889,12 +907,17 @@ class PatternGameApp:
         if strategy == "human":
             return
 
-        self.root.after(
+        if self.pending_ai_job is not None:
+            return
+
+        self.pending_ai_job = self.root.after(
             250,
             self._ai_step,
         )
 
     def _ai_step(self):
+
+        self.pending_ai_job = None
 
         if self.game_over:
             return

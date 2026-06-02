@@ -242,8 +242,7 @@ def draw_pattern_overlays(
     origin_y,
 ):
 
-    print("VISUAL RED:", red_patterns)
-    print("VISUAL GREEN:", green_patterns)
+    
 
     for pattern in red_patterns:
 
@@ -277,7 +276,7 @@ def draw_single_pattern(
     origin_y,
 ):
 
-    print("DRAWING:", pattern)
+    
 
     if len(pattern) != 3:
         return

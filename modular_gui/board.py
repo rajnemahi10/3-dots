@@ -1006,12 +1006,7 @@ def get_required_highlight_patterns(
                 [],
             )
 
-            print(
-                player,
-                pattern,
-                len(matches),
-                needed,
-            )
+            
 
             if len(matches) >= needed:
 
@@ -1019,12 +1014,8 @@ def get_required_highlight_patterns(
                     matches[:needed]
                 )
 
-    print(
-        "PLAYER",
-        player,
-        "HIGHLIGHTS",
-        highlights,
-    )
+   
+
 
     return highlights
 
