@@ -242,15 +242,15 @@ def draw_pattern_overlays(
     origin_y,
 ):
 
+    print("VISUAL RED:", red_patterns)
+    print("VISUAL GREEN:", green_patterns)
+
     for pattern in red_patterns:
 
         draw_single_pattern(
-
             canvas,
             pattern,
-
-            "#ff6666",
-
+            "#ff0000",
             cell_size,
             origin_x,
             origin_y,
@@ -259,12 +259,9 @@ def draw_pattern_overlays(
     for pattern in green_patterns:
 
         draw_single_pattern(
-
             canvas,
             pattern,
-
-            "#66ff66",
-
+            "#00ff00",
             cell_size,
             origin_x,
             origin_y,
@@ -279,6 +276,8 @@ def draw_single_pattern(
     origin_x,
     origin_y,
 ):
+
+    print("DRAWING:", pattern)
 
     if len(pattern) != 3:
         return
@@ -301,82 +300,45 @@ def draw_single_pattern(
 
         centers.append((x, y))
 
+        # giant cell highlight
+        canvas.create_rectangle(
+            origin_x + col * cell_size + 2,
+            origin_y + row * cell_size + 2,
+            origin_x + (col + 1) * cell_size - 2,
+            origin_y + (row + 1) * cell_size - 2,
+            outline=color,
+            width=10,
+        )
+
     x1, y1 = centers[0]
     x2, y2 = centers[1]
     x3, y3 = centers[2]
 
-    # glow cells
-
-    for row, col in pattern:
-
-        gx1 = (
-            origin_x
-            + col * cell_size
-            + 6
-        )
-
-        gy1 = (
-            origin_y
-            + row * cell_size
-            + 6
-        )
-
-        gx2 = gx1 + cell_size - 12
-        gy2 = gy1 + cell_size - 12
-
-        canvas.create_rectangle(
-
-            gx1,
-            gy1,
-            gx2,
-            gy2,
-
-            outline=color,
-            width=5,
-        )
-
-    # connect pattern
-
     canvas.create_line(
-
         x1,
         y1,
-
         x2,
         y2,
-
         fill=color,
-        width=7,
-        smooth=True,
+        width=12,
     )
 
     canvas.create_line(
-
         x2,
         y2,
-
         x3,
         y3,
-
         fill=color,
-        width=7,
-        smooth=True,
+        width=12,
     )
-
-    # dots
-
-    radius = 8
 
     for x, y in centers:
 
         canvas.create_oval(
-
-            x - radius,
-            y - radius,
-
-            x + radius,
-            y + radius,
-
+            x - 10,
+            y - 10,
+            x + 10,
+            y + 10,
             fill=color,
-            outline="",
+            outline=color,
         )

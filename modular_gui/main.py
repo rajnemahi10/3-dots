@@ -77,6 +77,14 @@ GROUPS = {
         "corner_dl",
         "corner_dr",
     ],
+
+    "octagons": [
+
+        "octagon_ul",
+        "octagon_ur",
+        "octagon_dl",
+        "octagon_dr",
+    ],
 }
 
 
@@ -511,6 +519,7 @@ class PatternGameApp:
             for section_name in (
                 "lines",
                 "triangles",
+                "octagons",
             ):
 
                 title = ttk.Label(
@@ -702,6 +711,8 @@ class PatternGameApp:
         )
 
     def start_game(self):
+
+        self._apply_pattern_settings()
 
         selected_size = int(
             self.board_size_var.get()

@@ -129,149 +129,131 @@ def is_safe_position(board):
 
 
 def generate_reverse_moves(
-   board,
-   player,
+    board,
+    player,
 ):
 
+    size = len(board)
 
-   size = len(board)
+    reverse_moves = []
 
+    directions = [
 
-   reverse_moves = []
+        (-1, 0),
+        (1, 0),
+        (0, -1),
+        (0, 1),
 
+        (-1, -1),
+        (-1, 1),
+        (1, -1),
+        (1, 1),
+    ]
 
-   directions = [
+    for row in range(size):
 
+        for col in range(size):
 
-       (-1, 0),
-       (1, 0),
-       (0, -1),
-       (0, 1),
+            piece = board[row][col]
 
+            if piece == ".":
+                continue
 
-       (-1, -1),
-       (-1, 1),
-       (1, -1),
-       (1, 1),
-   ]
+            # -------------------------
+            # player ownership
+            # -------------------------
 
+            if player == 1:
 
-   for row in range(size):
+                if piece not in (
+                    "r",
+                    "R",
+                    "Sr",
+                    "J",
+                ):
+                    continue
 
+            else:
 
-       for col in range(size):
+                if piece not in (
+                    "g",
+                    "G",
+                    "Sg",
+                    "J",
+                ):
+                    continue
 
+            # -------------------------
+            # jokers immovable
+            # -------------------------
 
-           piece = board[row][col]
+            if piece == "J":
+                continue
 
+            # -------------------------
+            # movement type
+            # -------------------------
 
-           if piece == ".":
-               continue
+            if piece in ("R", "G"):
 
+                steps = [2]
 
-           # player ownership
+            elif piece in ("Sr", "Sg"):
 
+                steps = [1, 2]
 
-           if player == 1:
+            else:
 
+                steps = [1]
 
-               if not (
-                   piece.startswith("r")
-                   or piece == "J"
-               ):
-                   continue
+            # -------------------------
+            # generate reverse moves
+            # -------------------------
 
+            for dr, dc in directions:
 
-           else:
+                for step in steps:
 
+                    prev_r = row - dr * step
+                    prev_c = col - dc * step
 
-               if not (
-                   piece.startswith("g")
-                   or piece == "J"
-               ):
-                   continue
+                    if not (
+                        0 <= prev_r < size
+                        and 0 <= prev_c < size
+                    ):
+                        continue
 
+                    # don't reverse into border
+                    if (
+                        prev_r == 0
+                        or prev_c == 0
+                        or prev_r == size - 1
+                        or prev_c == size - 1
+                    ):
+                        continue
 
-           # jokers immovable
-
-
-           if piece == "J":
-               continue
-
-
-           # long pieces
-
-
-           long_piece = piece.isupper()
-
-
-           steps = [2] if long_piece else [1]
-
-
-           for dr, dc in directions:
-
-
-               for step in steps:
-
-
-                   prev_r = row - dr * step
-                   prev_c = col - dc * step
-
-
-                   if not (
-                       0 <= prev_r < size
-                       and 0 <= prev_c < size
-                   ):
-                       continue
-
-
-                   # cannot move into edge
-
-
-                   if (
-                       prev_r == 0
-                       or prev_c == 0
-                       or prev_r == size - 1
-                       or prev_c == size - 1
-                   ):
-
-
-                       continue
-
-
-                   if (
-                       board[prev_r][prev_c]
-                       != "."
-                   ):
-                       continue
-
-
-                   if step == 2:
-
-
-                       middle_r = row - dr
-                       middle_c = col - dc
-
-
-                       if (
-                           board[middle_r][middle_c]
-                           != "."
-                       ):
-                           continue
-
-
-                   reverse_moves.append(
-
-
-                       (
-                           (row, col),
-                           (prev_r, prev_c),
-                       )
-                   )
-
-
-   return reverse_moves
-
+                    if board[prev_r][prev_c] != ".":
+                        continue
+
+                    if step == 2:
+
+                        middle_r = row - dr
+                        middle_c = col - dc
+
+                        if (
+                            board[middle_r][middle_c]
+                            != "."
+                        ):
+                            continue
+
+                    reverse_moves.append(
+                        (
+                            (row, col),
+                            (prev_r, prev_c),
+                        )
+                    )
+
+    return reverse_moves
 
 
 
@@ -459,14 +441,14 @@ if __name__ == "__main__":
 
 
    winning_board = [
-    [".", ".", "J", ".", ".", "J", ".","."],
-    [".", "g", ".", ".", "R", ".", ".","J"],
-    ["J", ".", "r", ".", "g", ".", ".","."],
-    [".", ".", ".", "J", ".", ".", ".","."],
-    [".", ".", ".", "r", "G", ".", ".","J"],
-    ["J", ".", ".", ".", ".", ".", ".","."],
-    [".", ".", ".", ".", ".", ".", ".","."],
-    [".", "J", ".", ".", "J", ".", ".","J"],
+    ["X","X","J","X","X","J","X"],
+    ["J",".",".",".",".",".","X"],
+    ["X",".",".",".",".",".","J"],
+    ["X","Sr",".","",".",".","X"],
+    ["J",".","g",".",".","Sg","X"],
+    ["X",".",".","r",".",".","J"],
+    ["X","J","X","X","J","X","X"],
+
 ]
 
 

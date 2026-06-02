@@ -357,6 +357,30 @@ def _shape_specifications():
             (1, 1),
             (1, 0),
         ),
+
+        "octagon_ul": (
+            (0,0),
+            (0,1),
+            (1,2),
+        ),
+
+        "octagon_ur": (
+            (0,2),
+            (0,1),
+            (1,0),
+        ),
+
+        "octagon_dr": (
+            (0,0),
+            (1,1),
+            (1,2),
+        ),
+
+        "octagon_dl": (
+            (0,2),
+            (1,1),
+            (1,0),
+        ),
     }
 
 
@@ -415,6 +439,8 @@ def get_shape_anchors(size):
 
 
 def clear_caches():
+
+    SHAPE_ANCHORS_BY_SIZE.clear()
 
     _cached_generate_moves.cache_clear()
     _cached_get_all_moves.cache_clear()
@@ -980,14 +1006,27 @@ def get_required_highlight_patterns(
                 [],
             )
 
+            print(
+                player,
+                pattern,
+                len(matches),
+                needed,
+            )
+
             if len(matches) >= needed:
 
                 highlights.extend(
                     matches[:needed]
                 )
 
-    return highlights
+    print(
+        "PLAYER",
+        player,
+        "HIGHLIGHTS",
+        highlights,
+    )
 
+    return highlights
 
 def player_has_win(board, player):
 
