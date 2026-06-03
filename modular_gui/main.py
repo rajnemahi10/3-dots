@@ -84,6 +84,10 @@ GROUPS = {
         "octagon_ur",
         "octagon_dl",
         "octagon_dr",
+        "octagon_vul",
+        "octagon_vur",
+        "octagon_vdl",
+        "octagon_vdr",
     ],
 }
 

@@ -235,9 +235,7 @@ def choose_move(
             move[1],
         )
 
-        # -----------------------
         # ALWAYS TAKE WIN
-        # -----------------------
 
         if (
             outcome["status"] == "win"
@@ -248,16 +246,12 @@ def choose_move(
             )
             continue
 
-        # -----------------------
         # NEVER ACCEPT DRAW
-        # -----------------------
 
         if outcome["status"] == "draw":
             continue
 
-        # -----------------------
         # NEVER SELF SABOTAGE
-        # -----------------------
 
         if (
             outcome["status"] == "win"
@@ -265,9 +259,7 @@ def choose_move(
         ):
             continue
 
-        # -----------------------
         # BLOCK IMMEDIATE LOSS
-        # -----------------------
 
         blocks_loss = (
             not opponent_has_immediate_win(
@@ -304,78 +296,27 @@ def choose_move(
             )
         )
 
-    # -----------------------
     # WIN NOW
-    # -----------------------
 
     if winning_moves:
-        return rng.choice(
-            winning_moves
-        )
+        return winning_moves[0]
 
-    # -----------------------
     # MUST BLOCK
-    # -----------------------
 
     if (
         opponent_winning_now
         and blocking_moves
     ):
-        return rng.choice(
-            blocking_moves
-        )
+        return blocking_moves[0]
 
     if not scored_moves:
-        return rng.choice(
-            legal_moves
-        )
+        return rng.choice(legal_moves)
 
     scored_moves.sort(
         key=lambda x: x[1],
         reverse=True,
     )
 
-    best_score = scored_moves[0][1]
+    # ALWAYS PLAY BEST MOVE
 
-    candidates = [
-
-        (move, score)
-
-        for move, score in scored_moves
-
-        if score >= best_score - 200
-
-    ]
-
-    top = candidates[:3]
-
-    if len(top) == 1:
-        return top[0][0]
-
-    if len(top) == 2:
-
-        return rng.choices(
-            [
-                top[0][0],
-                top[1][0],
-            ],
-            weights=[
-                75,
-                25,
-            ],
-            k=1,
-        )[0]
-
-    return rng.choices(
-        [
-            top[0][0],
-            top[1][0],
-            top[2][0],
-        ],
-        weights=[
-            75,
-            20,
-            5,
-        ],
-        k=1,
-    )[0]
+    return scored_moves[0][0]

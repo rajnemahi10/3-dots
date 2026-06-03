@@ -80,6 +80,22 @@ SHAPE_PATTERNS = {
     "octagon_dr": [
         [(0,0), (1,1), (1,2)],
     ],
+
+    "octagon_vul": [
+        [(0,0), (1,0), (2,1)],
+    ],
+
+    "octagon_vur": [
+        [(0,1), (1,1), (2,0)],
+    ],
+
+    "octagon_vdl": [
+        [(0,1), (1,0), (2,0)],
+    ],
+
+    "octagon_vdr": [
+        [(0,0), (1,1), (2,1)],
+    ],
 }
 
 
@@ -156,7 +172,7 @@ STARTING_NOTATION_BY_SIZE = {
     #     "X X J X X J X",
     # ],
 
-    #lines
+    # lines
     # 6: [
 
     #     "X X J X X J X X",
@@ -177,15 +193,32 @@ STARTING_NOTATION_BY_SIZE = {
     # ],
 
     #corner
+    # 6: [
+    #     "X X J X X J X X",
+    #     "X . . . . . . J",
+    #     "J . . g . . . X",
+    #     "X . . J . . g X",
+    #     "X . . . G . . J",
+    #     "J R . . . r . X",
+    #     "X . r . . . . X",
+    #     "X J X X J X X J",
+    # ],
+
+    # 6-triangle(ends in draw if both play optimally)
     6: [
-        "X X J X X J X X",
-        "X . . . . . . J",
-        "J . . g . . . X",
-        "X . . J . . g X",
-        "X . . . G . . J",
-        "J R . . . r . X",
-        "X . r . . . . X",
-        "X J X X J X X J",
+
+        "X g X J X r",
+
+        "J . . . . X",
+
+        "X . J . . Sr",
+
+        "Sg . . . . J",
+
+        ". . . . . X",
+
+        "X J X . X .",
+
     ],
 
     #lines
@@ -230,35 +263,35 @@ STARTING_NOTATION_BY_SIZE = {
 #     ],
 
     # triangle
-    7: [
-
-        "X X J X X J X",
-
-        "J . . . . . X",
-
-        "X . g . Sg . J",
-
-        "X . Sr . . . X",
-
-        "J . . . . r X",
-
-        "X . . . . . J",
-
-        "X J X X J X X",
-
-    ],
-
-    #shape - snowflake
     # 7: [
 
-    #     "J . . J . . J",
-    #     ". r . . . g .",
-    #     ". . X . X . .",
-    #     "J . . . . . J",
-    #     ". . X . X . .",
-    #     ". Sg . . . Sr .",
-    #     "J . . J . . J",
+    #     "X X J X X J X",
+
+    #     "J . . . . . X",
+
+    #     "X . g . Sg . J",
+
+    #     "X . Sr . . . X",
+
+    #     "J . . . . r X",
+
+    #     "X . . . . . J",
+
+    #     "X J X X J X X",
+
     # ],
+
+    #shape - snowflake
+    7: [
+
+        "J . . J . . J",
+        ". r . . . g .",
+        ". . X . X . .",
+        "J . . . . . J",
+        ". . X . X . .",
+        ". Sg . . . Sr .",
+        "J . . J . . J",
+    ],
 
     #hourglass
     # 7: [
@@ -292,17 +325,31 @@ STARTING_NOTATION_BY_SIZE = {
     #     "X X J . G . J X X",
     # ],
 
+    # 9:
+    # [
+    #     "X X X J X X J X X",
+    #     "X . . . . . . . J",
+    #     "J . r . . . Sg . X",
+    #     "X . . . . . . . X",
+    #     "X . g . J . r . J",
+    #     "J . . . . . . . X",
+    #     "X . Sr . . . g . X",
+    #     "X . . . . . . . J",
+    #     "J X X J X X J X X",
+    # ],
+
     9:
     [
-        "X X X J X X J X X",
-        "X . . . . . . . J",
-        "J . r . . . Sg . X",
-        "X . . . . . . . X",
-        "X . g . J . r . J",
-        "J . . . . . . . X",
-        "X . Sr . . . g . X",
-        "X . . . . . . . J",
-        "J X X J X X J X X",
+        
+        "J . . J X . X X",
+        ". . . . Sg . . X",
+        ". r . . . . r .",
+        "J . . J . . . X",
+        "X . . . . . . J",
+        ". g . . . . . g",
+        "X . . Sr . . . .",
+        "X X . X J . . J",
+
     ],
 
     #diamond shape
@@ -360,10 +407,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "triangle_up": 1,
-                        "triangle_down": 1,
-                        "triangle_left": 1,
-                        "triangle_right": 1,
+                        "triangle_up": 0,
+                        "triangle_down": 0,
+                        "triangle_left": 0,
+                        "triangle_right": 0,
                     },
                 },
 
@@ -386,10 +433,14 @@ class GameConfig:
 
                     "patterns": {
 
-                        "octagon_ul": 0,
-                        "octagon_ur": 0,
-                        "octagon_dl": 0,
-                        "octagon_dr": 0,
+                        "octagon_ul": 1,
+                        "octagon_ur": 1,
+                        "octagon_dl": 1,
+                        "octagon_dr": 1,
+                        "octagon_vul": 1,
+                        "octagon_vur": 1,
+                        "octagon_vdl": 1,
+                        "octagon_vdr": 1,
                     },
                 },
             },
@@ -415,10 +466,10 @@ class GameConfig:
 
                     "patterns": {
 
-                        "triangle_up": 1,
-                        "triangle_down": 1,
-                        "triangle_left": 1,
-                        "triangle_right": 1,
+                        "triangle_up": 0,
+                        "triangle_down": 0,
+                        "triangle_left": 0,
+                        "triangle_right": 0,
                     },
                 },
 
@@ -441,10 +492,14 @@ class GameConfig:
 
                     "patterns": {
 
-                        "octagon_ul": 0,
-                        "octagon_ur": 0,
-                        "octagon_dl": 0,
-                        "octagon_dr": 0,
+                        "octagon_ul": 1,
+                        "octagon_ur": 1,
+                        "octagon_dl": 1,
+                        "octagon_dr": 1,
+                        "octagon_vul": 1,
+                        "octagon_vur": 1,
+                        "octagon_vdl": 1,
+                        "octagon_vdr": 1,
                     },
                 },
             },
