@@ -7,6 +7,7 @@ from modular_gui.visuals import draw_game
 
 from modular_gui.board import clear_caches
 from modular_gui import ai_minimax
+from modular_gui import ai_mcts
 
 from modular_gui import fun_ai
 
@@ -14,7 +15,7 @@ from modular_gui import (
     ai_random,
     ai_heuristic,
     ai_minimax,
-    ai_monte_carlo,
+   
 )
 
 from modular_gui.board import (
@@ -38,7 +39,7 @@ CONTROLLERS = [
     "random",
     "heuristic",
     "minimax",
-    "monte_carlo",
+    "mcts",
     "fun",
 ]
 
@@ -51,8 +52,9 @@ AI_HANDLERS = {
     "random": ai_random.choose_move,
     "heuristic": ai_heuristic.choose_move,
     "minimax": ai_minimax.choose_move,
-    "monte_carlo": ai_monte_carlo.choose_move,
+    
     "fun": fun_ai.choose_move,
+    "mcts": ai_mcts.choose_move
 }
 
 GROUPS = {
@@ -107,7 +109,7 @@ class PatternGameApp:
         self.rng = random.Random()
 
         self.player_1_var = tk.StringVar(value="human")
-        self.player_2_var = tk.StringVar(value="monte_carlo")
+        self.player_2_var = tk.StringVar(value="mcts")
 
         self.board_size_var = tk.StringVar(value="6")
 
@@ -647,6 +649,13 @@ class PatternGameApp:
                         pattern
                     ] = count
 
+        # Rules changed — all cached outcomes must be cleared.
+        clear_caches()
+        ai_minimax.clear_cache()
+        ai_mcts.clear_cache()
+        ai_heuristic.clear_cache()
+        fun_ai.clear_cache()
+
     def _update_reports(self):
 
         red_counts = wins_including_cell(
@@ -745,7 +754,9 @@ class PatternGameApp:
 
         clear_caches()
         ai_minimax.clear_cache()
-        ai_monte_carlo.clear_cache()
+        ai_mcts.clear_cache()
+        ai_heuristic.clear_cache()
+        fun_ai.clear_cache()
 
         self._apply_pattern_settings()
 
@@ -845,6 +856,14 @@ class PatternGameApp:
     ):
 
         self._update_reports()
+
+        # Clear all caches so AI pre-explored positions don't return
+        # stale outcomes for positions the game has now actually reached.
+        clear_caches()
+        ai_minimax.clear_cache()
+        ai_mcts.clear_cache()
+        ai_heuristic.clear_cache()
+        fun_ai.clear_cache()
 
         outcome = resolve_move_outcome(
             self.board,

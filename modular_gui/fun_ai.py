@@ -1,3 +1,7 @@
+MOVE_WIN_CACHE = {}
+POSITION_CACHE = {}
+IMMEDIATE_WIN_CACHE = {}
+
 from modular_gui.board import (
     apply_move,
     get_all_moves,
@@ -18,10 +22,37 @@ def board_key(board, player):
         tuple(tuple(row) for row in board),
     )
 
+def clear_cache():
 
-def move_results_in_win(board, move, player):
+    MOVE_WIN_CACHE.clear()
+    POSITION_CACHE.clear()
+    IMMEDIATE_WIN_CACHE.clear()
 
-    next_board = copy_board(board)
+def move_results_in_win(
+    board,
+    move,
+    player,
+):
+
+    key = (
+        player,
+        move,
+        tuple(
+            tuple(r)
+            for r in board
+        ),
+    )
+
+    cached = MOVE_WIN_CACHE.get(
+        key
+    )
+
+    if cached is not None:
+        return cached
+
+    next_board = copy_board(
+        board
+    )
 
     apply_move(
         next_board,
@@ -34,10 +65,14 @@ def move_results_in_win(board, move, player):
         move[1],
     )
 
-    return (
+    result = (
         outcome["status"] == "win"
         and outcome["winner"] == player
     )
+
+    MOVE_WIN_CACHE[key] = result
+
+    return result
 
 
 def opponent_has_immediate_win(
@@ -45,11 +80,26 @@ def opponent_has_immediate_win(
     player,
 ):
 
+    key = (
+        player,
+        tuple(
+            tuple(r)
+            for r in board
+        ),
+    )
+
+    cached = IMMEDIATE_WIN_CACHE.get(
+        key
+    )
+
+    if cached is not None:
+        return cached
+
     opponent = (
         2 if player == 1 else 1
     )
 
-    return any(
+    result = any(
         move_results_in_win(
             board,
             move,
@@ -60,6 +110,10 @@ def opponent_has_immediate_win(
             opponent,
         )
     )
+
+    IMMEDIATE_WIN_CACHE[key] = result
+
+    return result
 
 
 def progress_score(
@@ -139,11 +193,29 @@ def count_winning_moves(
 
     return wins
 
-
 def evaluate_position(
     board,
     player,
 ):
+
+    key = (
+        player,
+        tuple(
+            tuple(r)
+            for r in board
+        ),
+    )
+
+    cached = POSITION_CACHE.get(
+        key
+    )
+
+    if cached is not None:
+        return cached
+
+    opponent = (
+        2 if player == 1 else 1
+    )
 
     score = 0
 
@@ -168,6 +240,27 @@ def evaluate_position(
         improved_patterns * 50
     )
 
+    (
+        opp_total_progress,
+        opp_best_progress,
+        opp_improved_patterns,
+    ) = progress_score(
+        board,
+        opponent,
+    )
+
+    score -= (
+        opp_total_progress * 90
+    )
+
+    score -= (
+        opp_best_progress * 450
+    )
+
+    score -= (
+        opp_improved_patterns * 40
+    )
+
     winning_moves = count_winning_moves(
         board,
         player,
@@ -180,7 +273,24 @@ def evaluate_position(
     if winning_moves >= 2:
         score += 10000
 
+    opponent_winning_moves = (
+        count_winning_moves(
+            board,
+            opponent,
+        )
+    )
+
+    score -= (
+        opponent_winning_moves * 1200
+    )
+
+    if opponent_winning_moves >= 2:
+        score -= 12000
+
+    POSITION_CACHE[key] = score
+
     return score
+
 
 
 def choose_move(
@@ -296,10 +406,44 @@ def choose_move(
             )
         )
 
+    def pick_best(scored):
+        best_score = max(
+            score
+            for _move, score in scored
+        )
+        best_moves = [
+            move
+            for move, score in scored
+            if score == best_score
+        ]
+        return rng.choice(best_moves)
+
     # WIN NOW
 
     if winning_moves:
-        return winning_moves[0]
+        winning_scored = []
+
+        for move in winning_moves:
+            next_board = copy_board(
+                board
+            )
+            apply_move(
+                next_board,
+                move,
+            )
+            winning_scored.append(
+                (
+                    move,
+                    evaluate_position(
+                        next_board,
+                        player,
+                    ),
+                )
+            )
+
+        return pick_best(
+            winning_scored
+        )
 
     # MUST BLOCK
 
@@ -307,16 +451,33 @@ def choose_move(
         opponent_winning_now
         and blocking_moves
     ):
-        return blocking_moves[0]
+        blocking_scored = []
+
+        for move in blocking_moves:
+            next_board = copy_board(
+                board
+            )
+            apply_move(
+                next_board,
+                move,
+            )
+            blocking_scored.append(
+                (
+                    move,
+                    evaluate_position(
+                        next_board,
+                        player,
+                    ),
+                )
+            )
+
+        return pick_best(
+            blocking_scored
+        )
 
     if not scored_moves:
         return rng.choice(legal_moves)
 
-    scored_moves.sort(
-        key=lambda x: x[1],
-        reverse=True,
+    return pick_best(
+        scored_moves
     )
-
-    # ALWAYS PLAY BEST MOVE
-
-    return scored_moves[0][0]

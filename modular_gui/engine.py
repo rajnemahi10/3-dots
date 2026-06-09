@@ -104,55 +104,88 @@ CURRENT_PATTERN_SIZE = None
 
 STARTING_NOTATION_BY_SIZE = {
 
-    #lines
-    4: [
-
-        "X X X X X X",
-
-        "X r r . . X",
-
-        "X . . . . X",
-
-        "X . . . . X",
-
-        "X . . g g X",
-
-        "X X X X X X",
-    ],
-    #lines
+    # #lines
     # 4: [
 
-    #     "X X J X X J",
+    #     "X X X X X X",
 
-    #     "X . . r . X",
+    #     "X r r . . X",
 
-    #     "X R . . . X",
+    #     "X . . . . X",
 
-    #     "J . . . G J",
+    #     "X . . . . X",
 
-    #     "X . g . . X",
+    #     "X . . g g X",
 
-    #     "X J X X J X",
-
+    #     "X X X X X X",
     # ],
+    # lines
+    4: [
 
-    #lines
+        "X X J X X J",
+
+        "X . . r . X",
+
+        "X R . . . X",
+
+        "J . . . G J",
+
+        "X . g . . X",
+
+        "X J X X J X",
+
+    ],
+    # just L
+
     5: [
 
-        "X X J X X X X",
+        ". J . J .",
 
-        "X . r . g . X",
+        "J . Sg . .",
 
-        "J . . . . . X",
+        ". . Sr . .",
 
-        "X R . . . G X",
+        "J . . . J",
 
-        "X . . . . . J",
+        "r . . . g",
 
-        "X . g . r . X",
-
-        "X X X J X X X",
     ],
+
+    #lines - only human vs AI and human is red - red has winning strategy whatever green plays
+    # 5: [
+
+    #     "X X J X X X X",
+
+    #     "X . r . g . X",
+
+    #     "J . . . . . X",
+
+    #     "X R . . . G X",
+
+    #     "X . . . . . J",
+
+    #     "X . g . r . X",
+
+    #     "X X X J X X X",
+    # ],
+
+    # 5 - triangle
+    # 5: [
+
+    #     "J X J X X X J",
+
+    #     "X . . . g . X",
+
+    #     "J . . . . . X",
+
+    #     "X Sr . . . Sg X",
+
+    #     "X . . . . . J",
+
+    #     "X . r . . . X",
+
+    #     "J X X J X X J",
+    # ],
 
     #corners
     # 5: [
@@ -173,24 +206,24 @@ STARTING_NOTATION_BY_SIZE = {
     # ],
 
     # lines
-    # 6: [
+    6: [
 
-    #     "X X J X X J X X",
+        "X X J X X J X X",
 
-    #     "J . . . R . . X",
+        "J . . . R . . X",
 
-    #     "X . . . . g . J",
+        "X . . . . g . J",
 
-    #     "X . . J . . . X",
+        "X . . J . . . X",
 
-    #     "J . . . . . . X",
+        "J . . . . . . X",
 
-    #     "X . . . . r . J",
+        "X . . . . r . J",
 
-    #     "X . . . G . . X",
+        "X . . . G . . X",
 
-    #     "X X J X X J X X",
-    # ],
+        "X X J X X J X X",
+    ],
 
     #corner
     # 6: [
@@ -205,43 +238,78 @@ STARTING_NOTATION_BY_SIZE = {
     # ],
 
     # 6-triangle(ends in draw if both play optimally)
-    6: [
+    # 6: [
 
-        "X g X J X r",
+    #     "X g X J X r",
 
-        "J . . . . X",
+    #     "J . . . . X",
 
-        "X . J . . Sr",
+    #     "X . J . . Sr",
 
-        "Sg . . . . J",
+    #     "Sg . . . . J",
 
-        ". . . . . X",
+    #     ". . . . . X",
 
-        "X J X . X .",
+    #     "X J X . X .",
 
-    ],
+    # ],
+
+    #only vertical or horizontal
+
+    # 6: [
+
+    #     "X J X X J X",
+
+    #     "X Sr . g . X",
+
+    #     "J . . . . J",
+
+    #     "X . . . . X",
+
+    #     "X . r . Sg X",
+
+    #     "X J X X J X",
+
+    # ],
+    # only diagonals
+
+    # 6: [
+
+    #     "X J X X J X",
+
+    #     "X . . . . X",
+
+    #     "J g . . r J",
+
+    #     "J r . . g J",
+
+    #     "X . . . . X",
+
+    #     "X J X X J X",
+
+    # ],
 
     #lines
-    # 7: [
+    7: [
 
-    #     "X X J X X X J X X",
+        "X X J X X X J X X",
 
-    #     "X . . R . G . . X",
+        "X . . R . G . . X",
 
-    #     "J . . . . . . . X",
+        "J . . . . . . . X",
 
-    #     "X . . J . . . . J",
+        "X . . J . . . . J",
 
-    #     "X . . . . . . . X",
+        "X . . . . . . . X",
 
-    #     "X . g . . . r . J",
+        "X . g . . . r . J",
 
-    #     "J . . . . . . . X",
+        "J . . . . . . . X",
 
-    #     "X . . G . R . . J",
+        "X . . G . R . . J",
 
-    #     "X X J X X X J X X",
-    # ],
+        "X X J X X X J X X",
+    ],
 
     #7- corners
 #    7: [
@@ -281,17 +349,72 @@ STARTING_NOTATION_BY_SIZE = {
 
     # ],
 
-    #shape - snowflake
-    7: [
+    # diff category - p1 - > p2 - octa (1 of each)
+    # 7: [
 
-        "J . . J . . J",
-        ". r . . . g .",
-        ". . X . X . .",
-        "J . . . . . J",
-        ". . X . X . .",
-        ". Sg . . . Sr .",
-        "J . . J . . J",
-    ],
+    #     "X . . . . . X",
+
+    #     ". J g . . J .",
+
+    #     ". . . . Sg . .",
+
+    #     ". . X . X . .",
+
+    #     ". . r . . . .",
+
+    #     ". J . . Sr J .",
+
+    #     "X . . . . . X",
+
+    # ],
+
+    # # 7 - octagon
+    # 7: [
+    #     "X . . . . . X",
+
+    #     ". J g . Sg J .",
+
+    #     ". . . . . . .",
+
+    #     "g . . X . . r",
+
+    #     ". . . . . . .",
+
+    #     ". J Sr . r J .",
+
+    #     "X . . . . . X",
+    # ],
+
+    # octagon
+    # 7: [
+
+    #     "r . . . . . g",
+
+    #     ". J . . . J .",
+
+    #     ". g . . . r .",
+
+    #     ". . . J . . .",
+
+    #     ". . . . . . .",
+
+    #     ". J . . . J .",
+
+    #     ". Sr . . . Sg .",
+
+    # ],
+
+    #shape - snowflake
+    # 7: [
+
+    #     "J . . J . . J",
+    #     ". r . . . g .",
+    #     ". . X . X . .",
+    #     "J . . . . . J",
+    #     ". . X . X . .",
+    #     ". Sg . . . Sr .",
+    #     "J . . J . . J",
+    # ],
 
     #hourglass
     # 7: [
@@ -337,6 +460,8 @@ STARTING_NOTATION_BY_SIZE = {
     #     "X . . . . . . . J",
     #     "J X X J X X J X X",
     # ],
+    
+    # triangle
 
     9:
     [
@@ -433,14 +558,14 @@ class GameConfig:
 
                     "patterns": {
 
-                        "octagon_ul": 1,
-                        "octagon_ur": 1,
-                        "octagon_dl": 1,
-                        "octagon_dr": 1,
-                        "octagon_vul": 1,
-                        "octagon_vur": 1,
-                        "octagon_vdl": 1,
-                        "octagon_vdr": 1,
+                        "octagon_ul": 0,
+                        "octagon_ur": 0,
+                        "octagon_dl": 0,
+                        "octagon_dr": 0,
+                        "octagon_vul": 0,
+                        "octagon_vur": 0,
+                        "octagon_vdl": 0,
+                        "octagon_vdr": 0,
                     },
                 },
             },
@@ -492,14 +617,14 @@ class GameConfig:
 
                     "patterns": {
 
-                        "octagon_ul": 1,
-                        "octagon_ur": 1,
-                        "octagon_dl": 1,
-                        "octagon_dr": 1,
-                        "octagon_vul": 1,
-                        "octagon_vur": 1,
-                        "octagon_vdl": 1,
-                        "octagon_vdr": 1,
+                        "octagon_ul": 0,
+                        "octagon_ur": 0,
+                        "octagon_dl": 0,
+                        "octagon_dr": 0,
+                        "octagon_vul": 0,
+                        "octagon_vur": 0,
+                        "octagon_vdl": 0,
+                        "octagon_vdr": 0,
                     },
                 },
             },

@@ -999,6 +999,40 @@ def evaluate_group(
     return any(enabled_results)
 
 
+def _group_has_moved_contribution(
+    group_config,
+    total_counts,
+    moved_counts,
+):
+
+    patterns = group_config[
+        "patterns"
+    ]
+
+    for pattern_name, needed_count in (
+        patterns.items()
+    ):
+
+        if needed_count <= 0:
+            continue
+
+        if (
+            total_counts.get(
+                pattern_name,
+                0,
+            )
+            >= needed_count
+            and moved_counts.get(
+                pattern_name,
+                0,
+            )
+            > 0
+        ):
+            return True
+
+    return False
+
+
 def get_required_highlight_patterns(
     board,
     player,
@@ -1044,8 +1078,7 @@ def get_required_highlight_patterns(
     return highlights
 
 def player_has_win(board, player):
-
-    counts = wins_including_cell(
+    total_counts = wins_including_cell(
         board,
         player,
         None,
@@ -1060,7 +1093,7 @@ def player_has_win(board, player):
 
         evaluate_group(
             group,
-            counts,
+            total_counts,
         )
 
         for group in groups.values()
@@ -1101,13 +1134,25 @@ def _cached_resolve_move_outcome(
         2 if mover == 1 else 1
     )
 
-    mover_counts = wins_including_cell(
-    board,
-    mover,
-    None,
+    mover_moved_counts = wins_including_cell(
+        board,
+        mover,
+        moved_cell,
     )
 
-    opponent_counts = wins_including_cell(
+    opponent_moved_counts = wins_including_cell(
+        board,
+        opponent,
+        moved_cell,
+    )
+
+    mover_total_counts = wins_including_cell(
+        board,
+        mover,
+        None,
+    )
+
+    opponent_total_counts = wins_including_cell(
         board,
         opponent,
         None,
@@ -1127,7 +1172,7 @@ def _cached_resolve_move_outcome(
 
         evaluate_group(
             group,
-            mover_counts,
+            mover_total_counts,
         )
 
         for group
@@ -1138,16 +1183,36 @@ def _cached_resolve_move_outcome(
 
         evaluate_group(
             group,
-            opponent_counts,
+            opponent_total_counts,
         )
 
         for group
         in opponent_groups.values()
     )
 
+    mover_contributed = any(
+        _group_has_moved_contribution(
+            group,
+            mover_total_counts,
+            mover_moved_counts,
+        )
+        for group in mover_groups.values()
+    )
+
+    opponent_contributed = any(
+        _group_has_moved_contribution(
+            group,
+            opponent_total_counts,
+            opponent_moved_counts,
+        )
+        for group in opponent_groups.values()
+    )
+
     if (
         mover_success
+        and mover_contributed
         and opponent_success
+        and opponent_contributed
     ):
 
         return (
@@ -1156,7 +1221,10 @@ def _cached_resolve_move_outcome(
             ("reason", "dual_pattern"),
         )
 
-    if opponent_success:
+    if (
+        opponent_success
+        and opponent_contributed
+    ):
 
         return (
             ("status", "win"),
@@ -1164,7 +1232,10 @@ def _cached_resolve_move_outcome(
             ("reason", "self_sabotage"),
         )
 
-    if mover_success:
+    if (
+        mover_success
+        and mover_contributed
+    ):
 
         return (
             ("status", "win"),

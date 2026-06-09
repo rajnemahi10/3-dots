@@ -6,11 +6,12 @@ import random
 import time
 from modular_gui import anytime_ai
 from modular_gui import fun_ai
+from modular_gui import ai_mcts
 
 from modular_gui import (
     ai_heuristic,
     ai_minimax,
-    ai_monte_carlo,
+    ai_mcts,
     ai_random,
 )
 from modular_gui.board import (
@@ -27,9 +28,10 @@ AI_HANDLERS = {
     "random": ai_random.choose_move,
     "heuristic": ai_heuristic.choose_move,
     "minimax": ai_minimax.choose_move,
-    "monte_carlo": ai_monte_carlo.choose_move,
+    
     "anytime": anytime_ai.choose_move,
     "fun": fun_ai.choose_move,
+    "mcts":ai_mcts.choose_move
 }
 
 
@@ -45,7 +47,7 @@ def clear_all_caches():
 
     clear_board_caches()
     ai_minimax.clear_cache()
-    ai_monte_carlo.clear_cache()
+    ai_mcts.clear_cache()
 
 
 def print_cache_stats():
@@ -61,8 +63,8 @@ def print_cache_stats():
     )
 
     print(
-        "monte_carlo_cache:",
-        ai_monte_carlo.cache_report(),
+        "mcts_cache:",
+        ai_mcts.cache_report(),
     )
 
 
