@@ -195,6 +195,50 @@ class TestRulesAndNotation(unittest.TestCase):
         self.assertTrue(wins_including_cell(board, 1, (1, 4)))
         self.assertFalse(wins_including_cell(board, 2, (1, 4)))
 
+    def test_multi_pattern_goal_counts_existing_patterns_off_move_path(self):
+        board = parse_compact_notation_rows(
+            [
+                "X J X J X X",
+                "X . R . . J",
+                "J r . g . X",
+                "X . r . g J",
+                "J . . G . X",
+                "X X J X J X",
+            ]
+        )
+
+        groups = (
+            __import__(
+                "modular_gui.engine",
+                fromlist=["config"],
+            )
+            .config
+            .player_pattern_groups
+        )
+
+        groups[1]["lines"]["patterns"]["horizontal"] = 2
+
+        try:
+            move = ((4, 3), (4, 1))
+            apply_move(board, move)
+
+            outcome = resolve_move_outcome(
+                board,
+                1,
+                (4, 1),
+            )
+
+            self.assertEqual(
+                outcome,
+                {
+                    "status": "win",
+                    "winner": 1,
+                    "reason": "pattern",
+                },
+            )
+        finally:
+            groups[1]["lines"]["patterns"]["horizontal"] = 0
+
 
 if __name__ == "__main__":
     unittest.main()
